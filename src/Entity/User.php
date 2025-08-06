@@ -55,12 +55,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $code_postal = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $adresse_mail = null;
-
-    #[ORM\Column]
-    private ?bool $est_admin = null;
-
     /**
      * @var Collection<int, Recette>
      */
@@ -233,30 +227,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCodePostal(int $code_postal): static
     {
         $this->code_postal = $code_postal;
-
-        return $this;
-    }
-
-    public function getAdresseMail(): ?string
-    {
-        return $this->adresse_mail;
-    }
-
-    public function setAdresseMail(string $adresse_mail): static
-    {
-        $this->adresse_mail = $adresse_mail;
-
-        return $this;
-    }
-
-    public function isEstAdmin(): ?bool
-    {
-        return $this->est_admin;
-    }
-
-    public function setEstAdmin(bool $est_admin): static
-    {
-        $this->est_admin = $est_admin;
 
         return $this;
     }
