@@ -27,7 +27,7 @@ public function register(
     }
 
     // 2. On vérifie la présence des champs obligatoires
-    $requiredFields = ['email', 'password', 'pseudo', 'prenom', 'nom', 'date_naissance', 'adresse', 'ville', 'code_postal', 'adresse_mail'];
+    $requiredFields = ['email', 'password', 'pseudo', 'prenom', 'nom', 'dateNaissance', 'adresse', 'ville', 'codePostal'];
     foreach ($requiredFields as $field) {
         if (empty($data[$field])) {
             return new JsonResponse(['error' => "Le champ '$field' est manquant"], Response::HTTP_BAD_REQUEST);
