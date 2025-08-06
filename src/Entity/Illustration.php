@@ -14,7 +14,7 @@ class Illustration
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $nom_fichier = null;
+    private ?string $nomFichier = null;
 
     #[ORM\OneToOne(mappedBy: 'illustration', cascade: ['persist', 'remove'])]
     private ?Recette $recette = null;
@@ -26,12 +26,12 @@ class Illustration
 
     public function getNomFichier(): ?string
     {
-        return $this->nom_fichier;
+        return $this->nomFichier;
     }
 
-    public function setNomFichier(string $nom_fichier): static
+    public function setNomFichier(string $nomFichier): static
     {
-        $this->nom_fichier = $nom_fichier;
+        $this->nomFichier = $nomFichier;
 
         return $this;
     }

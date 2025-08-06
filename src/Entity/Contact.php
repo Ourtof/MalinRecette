@@ -21,10 +21,10 @@ class Contact
     private ?string $nom = null;
 
     #[ORM\Column(length: 100)]
-    private ?string $adresse_mail = null;
+    private ?string $adresseMail = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $contenu_message = null;
+    private ?string $contenuMessage = null;
 
     public function getId(): ?int
     {
@@ -57,24 +57,24 @@ class Contact
 
     public function getAdresseMail(): ?string
     {
-        return $this->adresse_mail;
+        return $this->adresseMail;
     }
 
-    public function setAdresseMail(string $adresse_mail): static
+    public function setAdresseMail(string $adresseMail): static
     {
-        $this->adresse_mail = $adresse_mail;
+        $this->adresseMail = $adresseMail;
 
         return $this;
     }
 
     public function getContenuMessage(): ?string
     {
-        return $this->contenu_message;
+        return $this->contenuMessage;
     }
 
-    public function setContenuMessage(string $contenu_message): static
+    public function setContenuMessage(string $contenuMessage): static
     {
-        $this->contenu_message = $contenu_message;
+        $this->contenuMessage = $contenuMessage;
 
         return $this;
     }

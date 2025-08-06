@@ -23,7 +23,7 @@ class Recette
     private ?string $contenu = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date_recette = null;
+    private ?\DateTime $dateRecette = null;
 
     #[ORM\ManyToOne(inversedBy: 'recettes')]
     #[ORM\JoinColumn(nullable: false)]
@@ -75,12 +75,12 @@ class Recette
 
     public function getDateRecette(): ?\DateTime
     {
-        return $this->date_recette;
+        return $this->dateRecette;
     }
 
-    public function setDateRecette(\DateTime $date_recette): static
+    public function setDateRecette(\DateTime $dateRecette): static
     {
-        $this->date_recette = $date_recette;
+        $this->dateRecette = $dateRecette;
 
         return $this;
     }
