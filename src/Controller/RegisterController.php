@@ -42,8 +42,8 @@ public function register(
     $user->setNom($data['nom']);
     $user->setAdresse($data['adresse']);
     $user->setVille($data['ville']);
-    $user->setCodePostal((int) $data['code_postal']);
-    $user->setDateNaissance(new \DateTime($data['date_naissance'])); // Format ISO attendu
+    $user->setCodePostal((int) $data['codePostal']);
+    $user->setDateNaissance(new \DateTime($data['dateNaissance'])); // Format ISO attendu
 
     // 4. Hash du mot de passe
     $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);

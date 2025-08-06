@@ -44,7 +44,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $nom = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date_naissance = null;
+    private ?\DateTime $dateNaissance = null;
 
     #[ORM\Column(length: 255)]
     private ?string $adresse = null;
@@ -53,7 +53,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $ville = null;
 
     #[ORM\Column]
-    private ?int $code_postal = null;
+    private ?int $codePostal = null;
 
     /**
      * @var Collection<int, Recette>
@@ -64,6 +64,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->recettes = new ArrayCollection();
+        $this->roles = ['ROLE_USER'];
     }
 
     public function getId(): ?int
@@ -185,12 +186,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getDateNaissance(): ?\DateTime
     {
-        return $this->date_naissance;
+        return $this->dateNaissance;
     }
 
-    public function setDateNaissance(\DateTime $date_naissance): static
+    public function setDateNaissance(\DateTime $dateNaissance): static
     {
-        $this->date_naissance = $date_naissance;
+        $this->dateNaissance = $dateNaissance;
 
         return $this;
     }
@@ -221,12 +222,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getCodePostal(): ?int
     {
-        return $this->code_postal;
+        return $this->codePostal;
     }
 
-    public function setCodePostal(int $code_postal): static
+    public function setCodePostal(int $codePostal): static
     {
-        $this->code_postal = $code_postal;
+        $this->codePostal = $codePostal;
 
         return $this;
     }
