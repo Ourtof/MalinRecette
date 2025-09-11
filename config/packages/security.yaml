@@ -13,7 +13,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        main:
+        api:
             pattern: ^/api
             stateless: true
             provider: app_user_provider
@@ -28,7 +28,8 @@ security:
             jwt: ~
 
     access_control:
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+    - { path: ^/api/login, roles: PUBLIC_ACCESS }
+    - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY } 
 
     # access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
