@@ -21,7 +21,6 @@ class LoginController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         JWTTokenManagerInterface $JWTManager
     ): JsonResponse {
-        dd('OK CONTROLLER SAMER');
         $data = json_decode($request->getContent(), true);
 
         $email = $data['email'] ?? null;
