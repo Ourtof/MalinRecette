@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Api;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +34,12 @@ public function register(
         }
     }
 
+    // vérifie si un suer existe deja avec cet email
+    $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+    if ($existingUser) {
+        return new JsonResponse(['error' => 'Un utilisateur avec cet email existe déjà'], Response::HTTP_CONFLICT);
+    }
+
     // 3. On instancie un nouvel utilisateur
     $user = new User();
     $user->setEmail($data['email']);
@@ -43,17 +49,13 @@ public function register(
     $user->setAdresse($data['adresse']);
     $user->setVille($data['ville']);
     $user->setCodePostal((int) $data['codePostal']);
-    $user->setDateNaissance(new \DateTime($data['dateNaissance'])); // Format ISO attendu
+    $user->setDateNaissance(new \DateTime($data['dateNaissance']));
+    $user->setRoles(['ROLE_USER']);
+    $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
 
-    // 4. Hash du mot de passe
-    $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
-    $user->setPassword($hashedPassword);
-
-    // 5. Sauvegarde en base
     $entityManager->persist($user);
     $entityManager->flush();
 
-    // 6. Réponse
     return new JsonResponse(['message' => 'Utilisateur enregistré avec succès'], Response::HTTP_CREATED);
 }
 }
