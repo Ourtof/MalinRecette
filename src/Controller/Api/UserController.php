@@ -18,7 +18,7 @@ class UserController extends AbstractController
         $user = $this->getUser();
 
         if (!$user) {
-            return $this->json(['message' => 'Unauthorized'], 401);
+            return $this->json(['message' => 'Non authentifié'], 401);
         }
 
         return $this->json([
