@@ -43,9 +43,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 50)]
     private ?string $nom = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $dateNaissance = null;
-
     #[ORM\Column(length: 255)]
     private ?string $adresse = null;
 
@@ -180,18 +177,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
-
-        return $this;
-    }
-
-    public function getDateNaissance(): ?\DateTime
-    {
-        return $this->dateNaissance;
-    }
-
-    public function setDateNaissance(\DateTime $dateNaissance): static
-    {
-        $this->dateNaissance = $dateNaissance;
 
         return $this;
     }

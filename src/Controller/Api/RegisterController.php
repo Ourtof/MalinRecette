@@ -13,7 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class RegisterController extends AbstractController
 {
-   #[Route('/api/register', name: 'api_register', methods: ['POST'])]
+   #[Route('/api/register', name: 'api_register', methods: ['POST', 'OPTIONS'])]
 public function register(
     Request $request,
     UserPasswordHasherInterface $passwordHasher,
@@ -27,7 +27,7 @@ public function register(
     }
 
     // 2. On vérifie la présence des champs obligatoires
-    $requiredFields = ['email', 'password', 'pseudo', 'prenom', 'nom', 'dateNaissance', 'adresse', 'ville', 'codePostal'];
+    $requiredFields = ['email', 'password', 'pseudo', 'prenom', 'nom', 'adresse', 'ville', 'codePostal'];
     foreach ($requiredFields as $field) {
         if (empty($data[$field])) {
             return new JsonResponse(['error' => "Le champ '$field' est manquant"], Response::HTTP_BAD_REQUEST);
@@ -49,7 +49,6 @@ public function register(
     $user->setAdresse($data['adresse']);
     $user->setVille($data['ville']);
     $user->setCodePostal((int) $data['codePostal']);
-    $user->setDateNaissance(new \DateTime($data['dateNaissance']));
     $user->setRoles(['ROLE_USER']);
     $user->setPassword($passwordHasher->hashPassword($user, $data['password']));
 

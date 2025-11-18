@@ -32,7 +32,8 @@ security:
             jwt: ~
 
     access_control:
-    - { path: ^/api/register$, roles: PUBLIC_ACCESS }
+    - { path: ^/api, methods: [OPTIONS], roles: PUBLIC_ACCESS }
+    - { path: ^/api/register, roles: PUBLIC_ACCESS }
     - { path: ^/api/login, roles: PUBLIC_ACCESS }
     - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY } 
 

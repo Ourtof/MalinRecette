@@ -26,7 +26,6 @@ class UserFixtures extends Fixture
         $user->setAdresse('123 rue de la Paix');
         $user->setVille('Paris');
         $user->setCodePostal(75000);
-        $user->setDateNaissance(new \DateTime('1990-01-01'));
         $user->setRoles(['ROLE_USER']);
 
         // Hash du mot de passe "password123"
