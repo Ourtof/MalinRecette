@@ -14,7 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 #[Route('/api')]
 class LoginController extends AbstractController
 {
-    #[Route('/login', name: 'api_login', methods: ['POST'])]
+    #[Route('/login', name: 'api_login', methods: ['POST', 'OPTIONS'])]
     public function login(
         Request $request,
         EntityManagerInterface $entityManager,

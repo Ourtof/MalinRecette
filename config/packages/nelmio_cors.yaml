@@ -1,15 +1,20 @@
 nelmio_cors:
-  defaults:
-    origin_regex: true
-    allow_origin:
-      - '^http://localhost:\d+$'
-      - '^http://127\.0\.0\.1:\d+$'
-      - '^https://localhost:\d+$'
-      - '^https://127\.0\.0\.1:\d+$'
-    allow_methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS']
-    allow_headers: ['Content-Type','Authorization', 'Accept', 'Origin',]
-    expose_headers: ['Authorization']
-    allow_credentials: false
-    max_age: 3600
-  paths:
-    '^/': ~
+    defaults:
+        origin_regex: true
+        allow_origin: ['*']
+        allow_headers: ['*']
+        allow_methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+        expose_headers: ['*']
+        max_age: 3600
+        allow_credentials: false
+
+    paths:
+        '^/api/':
+            allow_origin: ['*']
+            allow_headers: ['*']
+            allow_methods: ['POST', 'GET', 'OPTIONS']
+            allow_credentials: false
+            max_age: 3600
+
+# doc : permet d'accepter toutes les origines car dart ne permet pas le crossOrigin en local. 
+# ex : localhost:57850, symfo : localhost:8000
