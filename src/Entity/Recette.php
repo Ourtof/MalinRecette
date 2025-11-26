@@ -26,11 +26,11 @@ class Recette
     private ?\DateTime $dateRecette = null;
 
     #[ORM\ManyToOne(inversedBy: 'recettes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $auteur = null;
 
     #[ORM\OneToOne(inversedBy: 'recette', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false)] // TODO : remettre  à false après avoir testé l'api sur postman.
     private ?Illustration $illustration = null;
 
     /**
@@ -102,12 +102,26 @@ class Recette
         return $this->illustration;
     }
 
-    public function setIllustration(Illustration $illustration): static
+    public function setIllustration(?Illustration $illustration): static
+{
+    $this->illustration = $illustration;
+
+    // côté inverse déjà synchronisé dans Illustration::setRecette()
+    if ($illustration !== null && $illustration->getRecette() !== $this) {
+        $illustration->setRecette($this);
+    }
+
+    return $this;
+}
+
+        // TODO : remettre cette fonction recette pour la rendre non nullable après avoir testé api.
+
+    /* public function setIllustration(Illustration $illustration): static
     {
         $this->illustration = $illustration;
 
         return $this;
-    }
+    } */
 
     /**
      * @return Collection<int, Tag>

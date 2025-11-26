@@ -16,7 +16,7 @@ class Illustration
     #[ORM\Column(length: 255)]
     private ?string $nomFichier = null;
 
-    #[ORM\OneToOne(mappedBy: 'illustration', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'illustration', cascade: ['persist', 'remove'])] // TODO : enlever le nullable après avoir testé l'api sur postman. Avoir une image par défaut stockée dans le projet.
     private ?Recette $recette = null;
 
     public function getId(): ?int
@@ -41,7 +41,25 @@ class Illustration
         return $this->recette;
     }
 
-    public function setRecette(Recette $recette): static
+    public function setRecette(?Recette $recette): static
+{
+    // délie l'ancienne recette si besoin
+    if ($this->recette !== null && $this->recette->getIllustration() === $this) {
+        $this->recette->setIllustration(null);
+    }
+
+    $this->recette = $recette;
+
+    // set the owning side of the relation if necessary
+    if ($recette !== null && $recette->getIllustration() !== $this) {
+        $recette->setIllustration($this);
+    }
+
+    return $this;
+}
+
+    // TODO : remettre cette fonction recette pour la rendre non nullable après avoir testé api.
+    /* public function setRecette(Recette $recette): static
     {
         // set the owning side of the relation if necessary
         if ($recette->getIllustration() !== $this) {
@@ -51,5 +69,5 @@ class Illustration
         $this->recette = $recette;
 
         return $this;
-    }
+    }*/
 }
