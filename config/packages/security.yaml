@@ -32,10 +32,12 @@ security:
             jwt: ~
 
     access_control:
-    - { path: ^/api, methods: [OPTIONS], roles: PUBLIC_ACCESS }
-    - { path: ^/api/register, roles: PUBLIC_ACCESS }
-    - { path: ^/api/login, roles: PUBLIC_ACCESS }
-    - { path: ^/api,       roles: IS_AUTHENTICATED_FULLY } 
+        - { path: ^/api, methods: [OPTIONS], roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/recettes, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/recettes, roles: IS_AUTHENTICATED_FULLY, methods: [POST] }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
     # access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
