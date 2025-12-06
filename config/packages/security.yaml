@@ -36,6 +36,7 @@ security:
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/recettes, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/tags, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/recettes, roles: IS_AUTHENTICATED_FULLY, methods: [POST] }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
