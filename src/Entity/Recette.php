@@ -30,7 +30,7 @@ class Recette
     private ?User $auteur = null;
 
     #[ORM\OneToOne(inversedBy: 'recette', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)] // TODO : remettre  à false après avoir testé l'api sur postman.
+    #[ORM\JoinColumn(nullable: true)] // TODO : remettre  à false après avoir testé l'api sur postman.
     private ?Illustration $illustration = null;
 
     /**
