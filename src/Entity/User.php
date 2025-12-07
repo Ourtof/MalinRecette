@@ -52,6 +52,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $codePostal = null;
 
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserFoodProfile::class, cascade: ['persist', 'remove'])]
+    private ?UserFoodProfile $foodProfile = null;
+
     /**
      * @var Collection<int, Recette>
      */
@@ -246,4 +249,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+     public function getFoodProfile(): ?UserFoodProfile
+    {
+        return $this->foodProfile;
+    }
+
+    public function setFoodProfile(?UserFoodProfile $foodProfile): self
+    {
+        $this->foodProfile = $foodProfile;
+
+        if ($foodProfile && $foodProfile->getUser() !== $this) {
+            $foodProfile->setUser($this);
+        }
+
+        return $this;
+    }
+
 }
