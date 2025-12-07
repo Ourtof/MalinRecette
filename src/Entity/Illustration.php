@@ -59,6 +59,7 @@ class Illustration
 }
 
     // TODO : remettre cette fonction recette pour la rendre non nullable après avoir testé api.
+    // TODO : peut-être à supprimer car je crois que plus haut c'est la meme chose en meilleur.
     /* public function setRecette(Recette $recette): static
     {
         // set the owning side of the relation if necessary

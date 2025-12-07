@@ -30,7 +30,7 @@ class Recette
     private ?User $auteur = null;
 
     #[ORM\OneToOne(inversedBy: 'recette', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: true)] // TODO : remettre  à false après avoir testé l'api sur postman.
+    #[ORM\JoinColumn(nullable: true)] // TODO: Quand toute la BDD sera nettoyée et qu'on aura une illustration par défaut, passer nullable à false
     private ?Illustration $illustration = null;
 
     /**

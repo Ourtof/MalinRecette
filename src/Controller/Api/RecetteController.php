@@ -6,6 +6,7 @@ use App\Entity\Recette;
 use App\Entity\Tag;
 use App\Repository\RecetteRepository;
 use App\Repository\TagRepository;
+use App\Repository\IllustrationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -47,11 +48,12 @@ class RecetteController extends AbstractController
     public function create(
         Request $request,
         EntityManagerInterface $em,
-        TagRepository $tagRepo
+        TagRepository $tagRepo,
+        IllustrationRepository $illustrationRepo,
     ): JsonResponse {
         $user = $this->getUser();
         if (!$user) {
-            // Normalement #[IsGranted] suffit, mais sécurité supplémentaire
+            // #[IsGranted] devrait suffire mais on garde un filet
             return $this->json(['message' => 'Non authentifié'], 401);
         }
 
@@ -69,16 +71,26 @@ class RecetteController extends AbstractController
             ], 400);
         }
 
+        // 🔴 Illustration OBLIGATOIRE
+        if (empty($payload['illustrationId'])) {
+            return $this->json([
+                'message' => 'illustrationId est obligatoire',
+            ], 400);
+        }
+
+        $illustration = $illustrationRepo->find((int) $payload['illustrationId']);
+        if (!$illustration) {
+            return $this->json([
+                'message' => 'Illustration introuvable',
+            ], 400);
+        }
+
         $recette = new Recette();
         $recette->setTitre($titre);
         $recette->setContenu($contenu);
         $recette->setDateRecette(new \DateTime());
         $recette->setAuteur($user);
-
-        // TODO plus tard : gérer Illustration (upload / URL / choix)
-        // Pour l'instant, si ton champ est NOT NULL, il faudra soit :
-        // - mettre une illustration "par défaut"
-        // - ou rendre la colonne nullable
+        $recette->setIllustration($illustration);
 
         // Gestion des tags : tableau de noms ["rapide", "pâtes", ...]
         $tags = $payload['tags'] ?? [];
@@ -89,11 +101,10 @@ class RecetteController extends AbstractController
                     continue;
                 }
 
-                // ici on cherche sur 'contenu'
                 $tag = $tagRepo->findOneBy(['contenu' => $tagName]);
                 if (!$tag) {
                     $tag = new Tag();
-                    $tag->setContenu($tagName); // et on remplit bien 'contenu'
+                    $tag->setContenu($tagName);
                     $em->persist($tag);
                 }
 
@@ -120,7 +131,6 @@ class RecetteController extends AbstractController
 
             'auteur' => $auteur ? [
                 'id' => $auteur->getId(),
-                // adapte pseudo/email selon ton entité User
                 'pseudo' => method_exists($auteur, 'getPseudo') && $auteur->getPseudo()
                     ? $auteur->getPseudo()
                     : $auteur->getEmail(),
