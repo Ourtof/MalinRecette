@@ -4,12 +4,15 @@ namespace App\Controller\Api;
 
 use App\Entity\Recette;
 use App\Entity\Tag;
+use App\Entity\User;
 use App\Repository\RecetteRepository;
 use App\Repository\TagRepository;
 use App\Repository\IllustrationRepository;
+use App\Service\ServiceRecommandationRecettes;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -37,7 +40,7 @@ class RecetteController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    #[Route('/{id}', name: 'show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Recette $recette): JsonResponse
     {
         return $this->json($this->normalizeRecette($recette));
@@ -163,5 +166,53 @@ class RecetteController extends AbstractController
                 $recette->getTags()->toArray()
             ),
         ];
+    }
+
+      #[Route('/recommandation', name: 'recommandation', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
+    public function recommander(
+        ServiceRecommandationRecettes $serviceRecommandation
+    ): JsonResponse {
+        /** @var User|null $utilisateur */
+        $utilisateur = $this->getUser();
+
+        if (!$utilisateur instanceof User) {
+
+            // Filet de sécurité en plus de #[IsGranted]
+            return $this->json(['message' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Option : on impose d'avoir un profil, sinon 400
+        if (!$utilisateur->getFoodProfile()) {
+            return $this->json(
+                ['message' => 'Profil alimentaire non défini pour cet utilisateur'],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        // Appel de ton service existant
+        $recettes = $serviceRecommandation->recommanderPourUtilisateur($utilisateur, 20);
+
+        if (empty($recettes)) {
+            return $this->json([], Response::HTTP_OK);
+        }
+
+        $donnees = array_map(function (Recette $recette) {
+            $tags = [];
+
+            foreach ($recette->getTags() as $tag) {
+                if ($tag instanceof Tag) {
+                    $tags[] = $tag->getContenu();
+                }
+            }
+
+            return [
+                'id'    => $recette->getId(),
+                'titre' => $recette->getTitre(),
+                'tags'  => $tags,
+            ];
+        }, $recettes);
+
+        return $this->json($donnees, Response::HTTP_OK);
     }
 }
