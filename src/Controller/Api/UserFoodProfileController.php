@@ -14,7 +14,16 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class UserFoodProfileController extends AbstractController
 {
-    private const ALLOWED_TYPES = ['SPORTIF', 'MINCEUR', 'VEGETARIEN', 'CLASSIQUE'];
+    private const ALLOWED_GOAL_TYPES = [
+        UserFoodProfile::GOAL_CLASSIQUE,
+        UserFoodProfile::GOAL_SPORTIF,
+        UserFoodProfile::GOAL_MINCEUR,
+    ];
+
+    private const ALLOWED_DIET_TYPES = [
+        UserFoodProfile::DIET_CLASSIQUE,
+        UserFoodProfile::DIET_VEGETARIEN,
+    ];
 
     private const ALLOWED_ALLERGIES = [
         'GLUTEN',
@@ -34,10 +43,11 @@ class UserFoodProfileController extends AbstractController
         $user = $this->getUser();
         $profile = $user->getFoodProfile();
 
-        // Si pas de profil → on renvoie des valeurs par défaut (sans créer en base)
+        // Pas de profil → valeurs par défaut, sans créer en base
         if (!$profile) {
             return $this->json([
-                'personType'     => 'CLASSIQUE',
+                'goalType'       => UserFoodProfile::GOAL_CLASSIQUE,
+                'dietType'       => UserFoodProfile::DIET_CLASSIQUE,
                 'isHalal'        => false,
                 'allergies'      => [],
                 'autreAllergies' => null,
@@ -45,7 +55,8 @@ class UserFoodProfileController extends AbstractController
         }
 
         return $this->json([
-            'personType'     => $profile->getType(),
+            'goalType'       => $profile->getGoalType(),
+            'dietType'       => $profile->getDietType(),
             'isHalal'        => $profile->isHalal(),
             'allergies'      => $profile->getAllergies(),
             'autreAllergies' => $profile->getAutreAllergies(),
@@ -63,14 +74,20 @@ class UserFoodProfileController extends AbstractController
             return $this->json(['error' => 'JSON invalide'], 400);
         }
 
-        // --- Validation simple des champs attendus ---
         $errors = [];
 
-        // personType
-        if (!isset($data['personType']) || !is_string($data['personType'])) {
-            $errors[] = 'personType est requis.';
-        } elseif (!in_array($data['personType'], self::ALLOWED_TYPES, true)) {
-            $errors[] = 'personType doit être parmi : ' . implode(', ', self::ALLOWED_TYPES);
+        // goalType
+        if (!isset($data['goalType']) || !is_string($data['goalType'])) {
+            $errors[] = 'goalType est requis.';
+        } elseif (!in_array($data['goalType'], self::ALLOWED_GOAL_TYPES, true)) {
+            $errors[] = 'goalType doit être parmi : ' . implode(', ', self::ALLOWED_GOAL_TYPES);
+        }
+
+        // dietType
+        if (!isset($data['dietType']) || !is_string($data['dietType'])) {
+            $errors[] = 'dietType est requis.';
+        } elseif (!in_array($data['dietType'], self::ALLOWED_DIET_TYPES, true)) {
+            $errors[] = 'dietType doit être parmi : ' . implode(', ', self::ALLOWED_DIET_TYPES);
         }
 
         // isHalal
@@ -98,11 +115,16 @@ class UserFoodProfileController extends AbstractController
             }
         }
 
+        // autreAllergies (optionnel)
+        if (array_key_exists('autreAllergies', $data) && $data['autreAllergies'] !== null && !is_string($data['autreAllergies'])) {
+            $errors[] = 'autreAllergies doit être une chaîne ou null.';
+        }
+
         if (!empty($errors)) {
             return $this->json(['errors' => $errors], 400);
         }
 
-        // --- Récupération ou création du profil ---
+        // Récupération ou création du profil
         $profile = $user->getFoodProfile();
         if (!$profile) {
             $profile = new UserFoodProfile();
@@ -111,12 +133,12 @@ class UserFoodProfileController extends AbstractController
             $em->persist($profile);
         }
 
-        // --- Mise à jour des champs ---
-        $profile->setType($data['personType']);
-        $profile->setIsHalal($data['isHalal']);
-        $profile->setAllergies($data['allergies']);
+        $profile
+            ->setGoalType($data['goalType'])
+            ->setDietType($data['dietType'])
+            ->setIsHalal($data['isHalal'])
+            ->setAllergies($data['allergies']);
 
-        // autreAllergies (optionnel)
         if (array_key_exists('autreAllergies', $data)) {
             $profile->setAutreAllergies(
                 $data['autreAllergies'] !== null ? (string) $data['autreAllergies'] : null
@@ -126,7 +148,8 @@ class UserFoodProfileController extends AbstractController
         $em->flush();
 
         return $this->json([
-            'personType'     => $profile->getType(),
+            'goalType'       => $profile->getGoalType(),
+            'dietType'       => $profile->getDietType(),
             'isHalal'        => $profile->isHalal(),
             'allergies'      => $profile->getAllergies(),
             'autreAllergies' => $profile->getAutreAllergies(),

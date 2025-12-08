@@ -8,6 +8,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: UserFoodProfileRepository::class)]
 class UserFoodProfile
 {
+    public const GOAL_CLASSIQUE = 'CLASSIQUE';
+    public const GOAL_SPORTIF   = 'SPORTIF';
+    public const GOAL_MINCEUR   = 'MINCEUR';
+
+    public const DIET_CLASSIQUE   = 'CLASSIQUE';
+    public const DIET_VEGETARIEN  = 'VEGETARIEN';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -18,7 +25,10 @@ class UserFoodProfile
     private ?User $user = null;
 
     #[ORM\Column(length: 20)]
-    private string $type = 'CLASSIQUE';
+    private string $goalType = self::GOAL_CLASSIQUE;
+
+    #[ORM\Column(length: 20)]
+    private string $dietType = self::DIET_CLASSIQUE;
 
     #[ORM\Column(options: ['default' => false])]
     private bool $isHalal = false;
@@ -46,14 +56,26 @@ class UserFoodProfile
         return $this;
     }
 
-    public function getType(): string
+    public function getGoalType(): string
     {
-        return $this->type;
+        return $this->goalType;
     }
 
-    public function setType(string $type): self
+    public function setGoalType(string $goalType): self
     {
-        $this->type = $type;
+        $this->goalType = $goalType;
+
+        return $this;
+    }
+
+    public function getDietType(): string
+    {
+        return $this->dietType;
+    }
+
+    public function setDietType(string $dietType): self
+    {
+        $this->dietType = $dietType;
 
         return $this;
     }
