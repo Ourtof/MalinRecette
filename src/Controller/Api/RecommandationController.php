@@ -22,7 +22,7 @@ class RecommandationController extends AbstractController
     {
         /** @var \App\Entity\User $utilisateur */
         $utilisateur = $this->getUser();
-
+        
         $recettes = $this->serviceRecommandationRecettes->recommanderPourUtilisateur($utilisateur, 20);
 
         $donnees = [];

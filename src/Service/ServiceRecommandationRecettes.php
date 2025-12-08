@@ -62,7 +62,9 @@ class ServiceRecommandationRecettes
         }
 
         if ($regime === UserFoodProfile::DIET_VEGETARIEN) {
-            return $this->recettePossedeTag($recette, 'VEGETARIEN');
+
+            // Tag "Végétarienne" → code VEGETARIENNE
+            return $this->recettePossedeTagCode($recette, 'VEGETARIENNE');
         }
 
         return false;
@@ -74,7 +76,8 @@ class ServiceRecommandationRecettes
             return true;
         }
 
-        return $this->recettePossedeTag($recette, 'HALAL');
+        // Tag "Halal" → code HALAL
+        return $this->recettePossedeTagCode($recette, 'HALAL');
     }
 
     private function correspondALObjectif(Recette $recette, string $objectif): bool
@@ -84,11 +87,15 @@ class ServiceRecommandationRecettes
         }
 
         if ($objectif === UserFoodProfile::GOAL_SPORTIF) {
-            return $this->recettePossedeTag($recette, 'SPORTIF');
+
+            // On mappe SPORTIF sur ton tag "Riche en protéines" → code PROTEINEE
+            return $this->recettePossedeTagCode($recette, 'PROTEINEE');
         }
 
         if ($objectif === UserFoodProfile::GOAL_MINCEUR) {
-            return $this->recettePossedeTag($recette, 'HEALTHY');
+            
+            // MINCEUR → tag "Healthy" → code HEALTHY
+            return $this->recettePossedeTagCode($recette, 'HEALTHY');
         }
 
         return false;
@@ -103,7 +110,7 @@ class ServiceRecommandationRecettes
         $allergiesRecette = $recette->getAllergies();
 
         if (empty($allergiesRecette)) {
-            // Choix : pas d’info sur les allergies = on laisse passer
+            // Pas d’info allergies sur la recette → on laisse passer
             return true;
         }
 
@@ -116,14 +123,11 @@ class ServiceRecommandationRecettes
         return true;
     }
 
-    private function recettePossedeTag(Recette $recette, string $tagRequis): bool
+    private function recettePossedeTagCode(Recette $recette, string $codeRequis): bool
     {
-        if (!method_exists($recette, 'getTags')) {
-            return false;
-        }
-
         foreach ($recette->getTags() as $tag) {
-            if (method_exists($tag, 'getContenu') && $tag->getContenu() === $tagRequis) {
+            $code = $tag->getCode();
+            if ($code !== null && strtoupper($code) === strtoupper($codeRequis)) {
                 return true;
             }
         }
