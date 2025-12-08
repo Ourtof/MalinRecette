@@ -10,12 +10,16 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: TagRepository::class)]
 class Tag
 {
+    // Catégories de tags
+    public const CATEGORIE_OBJECTIF  = 'OBJECTIF';
+    public const CATEGORIE_ALLERGENE = 'ALLERGENE';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    // Libellé "humain" (ex. "Healthy", "Contient gluten")
+    // Libellé lisible (ex. "Healthy", "Contient gluten")
     #[ORM\Column(length: 100)]
     private ?string $contenu = null;
 
@@ -23,10 +27,11 @@ class Tag
     #[ORM\Column(length: 50, unique: true)]
     private ?string $code = null;
 
-    // Catégorie de tag (ex. "OBJECTIVE", "ALLERGEN")
+    // Catégorie de tag (ex. "OBJECTIF", "ALLERGENE")
     #[ORM\Column(length: 50)]
-    private ?string $category = null;
+    private ?string $categorie = null;
 
+    // Tag actif / inactif
     #[ORM\Column]
     private bool $isActive = true;
 
@@ -70,14 +75,14 @@ class Tag
         return $this;
     }
 
-    public function getCategory(): ?string
+    public function getCategorie(): ?string
     {
-        return $this->category;
+        return $this->categorie;
     }
 
-    public function setCategory(string $category): static
+    public function setCategorie(string $categorie): static
     {
-        $this->category = $category;
+        $this->categorie = $categorie;
 
         return $this;
     }
