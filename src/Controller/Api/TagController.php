@@ -5,21 +5,35 @@ namespace App\Controller\Api;
 use App\Repository\TagRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class TagController extends AbstractController
 {
     #[Route('/api/tags', name: 'api_tags_index', methods: ['GET'])]
-    public function index(TagRepository $tagRepository): JsonResponse
+    public function index(Request $request, TagRepository $tagRepository): JsonResponse
     {
-        // Récupère tous les contenu des tags
-        $rows = $tagRepository->createQueryBuilder('t')
-            ->select('t.contenu')
-            ->orderBy('t.contenu', 'ASC')
-            ->getQuery()
-            ->getArrayResult();
-        $tags = array_column($rows, 'contenu');
+        $categorie = $request->query->get('categorie'); // ex: OBJECTIF / ALLERGENE
 
-        return $this->json($tags);
+        $criteres = ['isActive' => true];
+
+        if (!empty($categorie)) {
+            $criteres['categorie'] = $categorie;
+        }
+
+        $tags = $tagRepository->findBy(
+            $criteres,
+            ['categorie' => 'ASC', 'contenu' => 'ASC']
+        );
+
+        $data = array_map(function ($tag) {
+            return [
+                'code'      => $tag->getCode(),
+                'contenu'   => $tag->getContenu(),
+                'categorie' => $tag->getCategorie(),
+            ];
+        }, $tags);
+
+        return $this->json($data);
     }
 }

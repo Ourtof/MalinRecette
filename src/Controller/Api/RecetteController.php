@@ -71,7 +71,7 @@ class RecetteController extends AbstractController
             ], 400);
         }
 
-        // 🔴 Illustration OBLIGATOIRE
+        // Illustration OBLIGATOIRE
         if (empty($payload['illustrationId'])) {
             return $this->json([
                 'message' => 'illustrationId est obligatoire',
@@ -92,22 +92,32 @@ class RecetteController extends AbstractController
         $recette->setAuteur($user);
         $recette->setIllustration($illustration);
 
-        // Gestion des tags : tableau de noms ["rapide", "pâtes", ...]
-        $tags = $payload['tags'] ?? [];
-        if (is_array($tags)) {
-            foreach ($tags as $tagName) {
-                $tagName = trim((string) $tagName);
-                if ($tagName === '') {
-                    continue;
-                }
+        // 👉 Gestion des tags : tableau de codes ["HEALTHY", "HALAL", "GLUTEN", ...]
+        $tagCodes = $payload['tagCodes'] ?? [];
 
-                $tag = $tagRepo->findOneBy(['contenu' => $tagName]);
-                if (!$tag) {
-                    $tag = new Tag();
-                    $tag->setContenu($tagName);
-                    $em->persist($tag);
-                }
+        if (!is_array($tagCodes)) {
+            return $this->json([
+                'message' => 'tagCodes doit être un tableau de codes',
+            ], 400);
+        }
 
+        if (!empty($tagCodes)) {
+            $tags = $tagRepo->findBy([
+                'code'     => $tagCodes,
+                'isActive' => true,
+            ]);
+
+            $codesTrouves = array_map(fn(Tag $tag) => $tag->getCode(), $tags);
+            $codesManquants = array_diff($tagCodes, $codesTrouves);
+
+            if (!empty($codesManquants)) {
+                return $this->json([
+                    'message' => 'Certains tagCodes sont inconnus ou inactifs',
+                    'detail'  => array_values($codesManquants),
+                ], 400);
+            }
+
+            foreach ($tags as $tag) {
                 $recette->addTag($tag);
             }
         }
@@ -138,14 +148,16 @@ class RecetteController extends AbstractController
 
             'illustration' => $illustration ? [
                 'id' => $illustration->getId(),
-                'nomFichier' => $illustration->getNomFichier(),
+                'nomFichier'=> $illustration->getNomFichier(),
             ] : null,
 
             'tags' => array_map(
                 function (Tag $tag) {
                     return [
                         'id' => $tag->getId(),
+                        'code' => $tag->getCode(),
                         'contenu' => $tag->getContenu(),
+                        'categorie' => $tag->getCategorie(),
                     ];
                 },
                 $recette->getTags()->toArray()
