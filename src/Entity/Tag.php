@@ -15,8 +15,20 @@ class Tag
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100, unique: true)]
+    // Libellé "humain" (ex. "Healthy", "Contient gluten")
+    #[ORM\Column(length: 100)]
     private ?string $contenu = null;
+
+    // Code technique stable (ex. "HEALTHY", "GLUTEN", "HALAL")
+    #[ORM\Column(length: 50, unique: true)]
+    private ?string $code = null;
+
+    // Catégorie de tag (ex. "OBJECTIVE", "ALLERGEN")
+    #[ORM\Column(length: 50)]
+    private ?string $category = null;
+
+    #[ORM\Column]
+    private bool $isActive = true;
 
     /**
      * @var Collection<int, Recette>
@@ -46,6 +58,42 @@ class Tag
         return $this;
     }
 
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(string $code): static
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(string $category): static
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Recette>
      */
@@ -71,5 +119,10 @@ class Tag
         }
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->contenu ?? $this->code ?? 'Tag';
     }
 }
