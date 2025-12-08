@@ -27,7 +27,7 @@ class UserFoodProfile
     private array $allergies = [];
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $otherAllergies = null;
+    private ?string $autreAllergies = null;
 
     public function getId(): ?int
     {
@@ -82,14 +82,14 @@ class UserFoodProfile
         return $this;
     }
 
-    public function getOtherAllergies(): ?string
+    public function getAutreAllergies(): ?string
     {
-        return $this->otherAllergies;
+        return $this->autreAllergies;
     }
 
-    public function setOtherAllergies(?string $otherAllergies): self
+    public function setAutreAllergies(?string $autreAllergies): self
     {
-        $this->otherAllergies = $otherAllergies;
+        $this->autreAllergies = $autreAllergies;
 
         return $this;
     }

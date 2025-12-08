@@ -40,7 +40,7 @@ class UserFoodProfileController extends AbstractController
                 'personType'     => 'CLASSIQUE',
                 'isHalal'        => false,
                 'allergies'      => [],
-                'otherAllergies' => null,
+                'autreAllergies' => null,
             ]);
         }
 
@@ -48,7 +48,7 @@ class UserFoodProfileController extends AbstractController
             'personType'     => $profile->getType(),
             'isHalal'        => $profile->isHalal(),
             'allergies'      => $profile->getAllergies(),
-            'otherAllergies' => $profile->getOtherAllergies(),
+            'autreAllergies' => $profile->getAutreAllergies(),
         ]);
     }
 
@@ -116,10 +116,10 @@ class UserFoodProfileController extends AbstractController
         $profile->setIsHalal($data['isHalal']);
         $profile->setAllergies($data['allergies']);
 
-        // otherAllergies (optionnel)
-        if (array_key_exists('otherAllergies', $data)) {
-            $profile->setOtherAllergies(
-                $data['otherAllergies'] !== null ? (string) $data['otherAllergies'] : null
+        // autreAllergies (optionnel)
+        if (array_key_exists('autreAllergies', $data)) {
+            $profile->setAutreAllergies(
+                $data['autreAllergies'] !== null ? (string) $data['autreAllergies'] : null
             );
         }
 
@@ -129,7 +129,7 @@ class UserFoodProfileController extends AbstractController
             'personType'     => $profile->getType(),
             'isHalal'        => $profile->isHalal(),
             'allergies'      => $profile->getAllergies(),
-            'otherAllergies' => $profile->getOtherAllergies(),
+            'autreAllergies' => $profile->getAutreAllergies(),
         ]);
     }
 }
