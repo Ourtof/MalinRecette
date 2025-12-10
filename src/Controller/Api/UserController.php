@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -31,7 +32,8 @@ class UserController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function updateMe(
         Request $request,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
@@ -41,11 +43,10 @@ class UserController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
-        if ($data === null) {
+        if (!is_array($data)) {
             return $this->json(['error' => 'JSON invalide'], 400);
         }
 
-        // On met à jour uniquement les champs envoyés
         if (array_key_exists('prenom', $data)) {
             $user->setPrenom($data['prenom']);
         }
@@ -55,6 +56,28 @@ class UserController extends AbstractController
         if (array_key_exists('pseudo', $data)) {
             $user->setPseudo($data['pseudo']);
         }
+        if (array_key_exists('email', $data)) {
+            $user->setEmail($data['email']);
+        }
+        if (array_key_exists('adresse', $data)) {
+            $user->setAdresse($data['adresse']);
+        }
+        if (array_key_exists('ville', $data)) {
+            $user->setVille($data['ville']);
+        }
+        if (array_key_exists('codePostal', $data)) {
+            if (!preg_match('/^\d{5}$/', $data['codePostal'])) {
+                return $this->json(['error' => 'Code postal invalide (5 chiffres requis)'], 400);
+            }
+        $user->setCodePostal($data['codePostal']);
+        }
+          if (array_key_exists('password', $data) && !empty($data['password'])) {
+        $hashedPassword = $passwordHasher->hashPassword(
+            $user,
+            $data['password']
+        );
+        $user->setPassword($hashedPassword);
+    }
 
         $em->flush();
 
@@ -64,12 +87,15 @@ class UserController extends AbstractController
     private function serializeUser(User $user): array
     {
         return [
-            'id'     => $user->getId(),
-            'email'  => $user->getUserIdentifier(),
-            'roles'  => $user->getRoles(),
-            'prenom' => $user->getPrenom(),
-            'nom'    => $user->getNom(),
-            'pseudo' => $user->getPseudo(),
+            'id'         => $user->getId(),
+            'email'      => $user->getUserIdentifier(),
+            'roles'      => $user->getRoles(),
+            'prenom'     => $user->getPrenom(),
+            'nom'        => $user->getNom(),
+            'pseudo'     => $user->getPseudo(),
+            'adresse'    => $user->getAdresse(),
+            'ville'      => $user->getVille(),
+            'codePostal' => (string) $user->getCodePostal(),
         ];
     }
 }
