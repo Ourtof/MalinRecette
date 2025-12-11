@@ -95,35 +95,45 @@ class RecetteController extends AbstractController
         $recette->setAuteur($user);
         $recette->setIllustration($illustration);
 
-        // 👉 Gestion des tags : tableau de codes ["HEALTHY", "HALAL", "GLUTEN", ...]
-        $tagCodes = $payload['tagCodes'] ?? [];
+// 👉 Gestion des tags : tableau de codes ["HEALTHY", "HALAL", "GLUTEN", ...]
+$tagCodes = $payload['tagCodes'] ?? [];
 
-        if (!is_array($tagCodes)) {
-            return $this->json([
-                'message' => 'tagCodes doit être un tableau de codes',
-            ], 400);
+if (!is_array($tagCodes)) {
+    return $this->json([
+        'message' => 'tagCodes doit être un tableau de codes',
+    ], 400);
+}
+
+$allergies = [];
+
+if (!empty($tagCodes)) {
+    $tags = $tagRepo->findBy([
+        'code'     => $tagCodes,
+        'isActive' => true,
+    ]);
+
+    $codesTrouves = array_map(fn(Tag $tag) => $tag->getCode(), $tags);
+    $codesManquants = array_diff($tagCodes, $codesTrouves);
+
+    if (!empty($codesManquants)) {
+        return $this->json([
+            'message' => 'Certains tagCodes sont inconnus ou inactifs',
+            'detail'  => array_values($codesManquants),
+        ], 400);
+    }
+
+    foreach ($tags as $tag) {
+        $recette->addTag($tag);
+
+        // Si c'est un allergène, on enregistre son code
+        if ($tag->getCategorie() === 'ALLERGENE') {
+            $allergies[] = $tag->getCode(); // ex. "GLUTEN"
         }
+    }
+}
 
-        if (!empty($tagCodes)) {
-            $tags = $tagRepo->findBy([
-                'code'     => $tagCodes,
-                'isActive' => true,
-            ]);
-
-            $codesTrouves = array_map(fn(Tag $tag) => $tag->getCode(), $tags);
-            $codesManquants = array_diff($tagCodes, $codesTrouves);
-
-            if (!empty($codesManquants)) {
-                return $this->json([
-                    'message' => 'Certains tagCodes sont inconnus ou inactifs',
-                    'detail'  => array_values($codesManquants),
-                ], 400);
-            }
-
-            foreach ($tags as $tag) {
-                $recette->addTag($tag);
-            }
-        }
+// Sauvegarde du JSON ["GLUTEN", "LACTOSE", ...]
+$recette->setAllergies($allergies);
 
         $em->persist($recette);
         $em->flush();
