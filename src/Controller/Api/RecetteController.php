@@ -178,51 +178,53 @@ $recette->setAllergies($allergies);
         ];
     }
 
-      #[Route('/recommandation', name: 'recommandation', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
-    public function recommander(
-        ServiceRecommandationRecettes $serviceRecommandation
-    ): JsonResponse {
-        /** @var User|null $utilisateur */
-        $utilisateur = $this->getUser();
+    #[Route('/recommandation', name: 'recommandation', methods: ['GET'])]
+#[IsGranted('ROLE_USER')]
+public function recommander(
+    ServiceRecommandationRecettes $serviceRecommandation
+): JsonResponse {
+    /** @var User|null $utilisateur */
+    $utilisateur = $this->getUser();
 
-        if (!$utilisateur instanceof User) {
-
-            // Filet de sécurité en plus de #[IsGranted]
-            return $this->json(['message' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        // Option : on impose d'avoir un profil, sinon 400
-        if (!$utilisateur->getFoodProfile()) {
-            return $this->json(
-                ['message' => 'Profil alimentaire non défini pour cet utilisateur'],
-                Response::HTTP_BAD_REQUEST
-            );
-        }
-
-        // Appel de ton service existant
-        $recettes = $serviceRecommandation->recommanderPourUtilisateur($utilisateur, 20);
-
-        if (empty($recettes)) {
-            return $this->json([], Response::HTTP_OK);
-        }
-
-        $donnees = array_map(function (Recette $recette) {
-            $tags = [];
-
-            foreach ($recette->getTags() as $tag) {
-                if ($tag instanceof Tag) {
-                    $tags[] = $tag->getContenu();
-                }
-            }
-
-            return [
-                'id'    => $recette->getId(),
-                'titre' => $recette->getTitre(),
-                'tags'  => $tags,
-            ];
-        }, $recettes);
-
-        return $this->json($donnees, Response::HTTP_OK);
+    if (!$utilisateur instanceof User) {
+        // Filet de sécurité en plus de #[IsGranted]
+        return $this->json(['message' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
     }
+
+    // On impose d'avoir un profil, sinon 400 (cohérent avec ton Flutter)
+    if (!$utilisateur->getFoodProfile()) {
+        return $this->json(
+            ['message' => 'Profil alimentaire non défini pour cet utilisateur'],
+            Response::HTTP_BAD_REQUEST
+        );
+    }
+
+    // Appel du service : on peut demander plusieurs résultats,
+    // mais pour l’API on ne garde que le "meilleur" (le premier).
+    $recettes = $serviceRecommandation->recommanderPourUtilisateur($utilisateur, 20);
+
+    // Aucune recette adaptée -> 204, comme attendu côté Flutter
+    if (empty($recettes)) {
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /** @var Recette $recette */
+    $recette = $recettes[0];
+
+    $tags = [];
+    foreach ($recette->getTags() as $tag) {
+        if ($tag instanceof Tag) {
+            $tags[] = $tag->getContenu();
+        }
+    }
+
+    // Un SEUL objet JSON, comme attendu par RecommendedRecipe.fromJson(...)
+    $donnees = [
+        'id'    => $recette->getId(),
+        'titre' => $recette->getTitre(),
+        'tags'  => $tags,
+    ];
+
+    return $this->json($donnees, Response::HTTP_OK);
+}
 }
