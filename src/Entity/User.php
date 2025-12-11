@@ -61,6 +61,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Recette::class, mappedBy: 'auteur', cascade: ['remove'])]
     private Collection $recettes;
 
+    #[ORM\Column]
+    private ?bool $enabled = null;
+
     public function __construct()
     {
         $this->recettes = new ArrayCollection();
@@ -262,6 +265,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($foodProfile && $foodProfile->getUser() !== $this) {
             $foodProfile->setUser($this);
         }
+
+        return $this;
+    }
+
+    public function isEnabled(): ?bool
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled(bool $enabled): static
+    {
+        $this->enabled = $enabled;
 
         return $this;
     }
