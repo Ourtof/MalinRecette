@@ -32,6 +32,10 @@ class LoginController extends AbstractController
 
         $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
+        if (!$user->isEnabled()) {
+            return $this->json(['error' => 'Compte désactivé. Contacte un administrateur.'], 403);
+        }
+
         if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
             return $this->json(['message' => 'Identifiants invalides.'], 401);
         }
