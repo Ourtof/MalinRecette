@@ -61,8 +61,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Recette::class, mappedBy: 'auteur', cascade: ['remove'])]
     private Collection $recettes;
 
-    #[ORM\Column]
-    private ?bool $enabled = null;
+    #[ORM\Column(options: ['default' => true])]
+    private bool $enabled = true;
 
     public function __construct()
     {
@@ -269,7 +269,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isEnabled(): ?bool
+    public function isEnabled(): bool
     {
         return $this->enabled;
     }
