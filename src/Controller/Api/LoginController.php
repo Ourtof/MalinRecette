@@ -3,13 +3,13 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/api')]
 class LoginController extends AbstractController
@@ -21,7 +21,12 @@ class LoginController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         JWTTokenManagerInterface $JWTManager
     ): JsonResponse {
-        $data = json_decode($request->getContent(), true);
+        // Préflight CORS éventuel
+        if ($request->getMethod() === 'OPTIONS') {
+            return new JsonResponse(null, 204);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
 
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
@@ -30,25 +35,39 @@ class LoginController extends AbstractController
             return $this->json(['message' => 'Email et mot de passe requis.'], 400);
         }
 
-        $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+        /** @var User|null $user */
+        $user = $entityManager
+            ->getRepository(User::class)
+            ->findOneBy(['email' => $email]);
 
-        if (!$user->isEnabled()) {
-            return $this->json(['error' => 'Compte désactivé. Contacte un administrateur.'], 403);
-        }
-
-        if (!$user || !$passwordHasher->isPasswordValid($user, $password)) {
+        // 1) Pas d'utilisateur → identifiants invalides
+        if (!$user) {
             return $this->json(['message' => 'Identifiants invalides.'], 401);
         }
 
+        // 2) Mauvais mot de passe
+        if (!$passwordHasher->isPasswordValid($user, $password)) {
+            return $this->json(['message' => 'Identifiants invalides.'], 401);
+        }
+
+        // 3) Compte désactivé
+        if (!$user->isEnabled()) {
+            return $this->json(
+                ['message' => 'Compte désactivé. Contacte un administrateur.'],
+                403
+            );
+        }
+
+        // 4) OK → génération du token
         $token = $JWTManager->create($user);
 
         return $this->json([
             'token' => $token,
             'user' => [
-                'id' => $user->getId(),
+                'id'    => $user->getId(),
                 'email' => $user->getUserIdentifier(),
                 'roles' => $user->getRoles(),
-            ]
+            ],
         ]);
     }
 }
