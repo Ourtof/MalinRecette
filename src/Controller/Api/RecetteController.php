@@ -142,41 +142,52 @@ $recette->setAllergies($allergies);
     }
 
     private function normalizeRecette(Recette $recette): array
-    {
-        $auteur = $recette->getAuteur();
-        $illustration = $recette->getIllustration();
+{
+    $auteur = $recette->getAuteur();
+    $illustration = $recette->getIllustration();
 
-        return [
-            'id' => $recette->getId(),
-            'titre' => $recette->getTitre(),
-            'contenu' => $recette->getContenu(),
-            'dateRecette' => $recette->getDateRecette()?->format(\DateTime::ATOM),
+    $auteurArray = null;
 
-            'auteur' => $auteur ? [
-                'id' => $auteur->getId(),
-                'pseudo' => method_exists($auteur, 'getPseudo') && $auteur->getPseudo()
-                    ? $auteur->getPseudo()
-                    : $auteur->getEmail(),
-            ] : null,
+    if ($auteur instanceof User) {
+        $pseudo = $auteur->getPseudo();
 
-            'illustration' => $illustration ? [
-                'id' => $illustration->getId(),
-                'nomFichier'=> $illustration->getNomFichier(),
-            ] : null,
+        // Si le compte est désactivé, on anonymise l’affichage
+        if (method_exists($auteur, 'isEnabled') && !$auteur->isEnabled()) {
+            $pseudo = 'Ancien utilisateur';
+        }
 
-            'tags' => array_map(
-                function (Tag $tag) {
-                    return [
-                        'id' => $tag->getId(),
-                        'code' => $tag->getCode(),
-                        'contenu' => $tag->getContenu(),
-                        'categorie' => $tag->getCategorie(),
-                    ];
-                },
-                $recette->getTags()->toArray()
-            ),
+        $auteurArray = [
+            'id'     => $auteur->getId(),
+            'pseudo' => $pseudo,
         ];
     }
+
+    return [
+        'id'          => $recette->getId(),
+        'titre'       => $recette->getTitre(),
+        'contenu'     => $recette->getContenu(),
+        'dateRecette' => $recette->getDateRecette()?->format(\DateTime::ATOM),
+
+        'auteur'      => $auteurArray,
+
+        'illustration' => $illustration ? [
+            'id'         => $illustration->getId(),
+            'nomFichier' => $illustration->getNomFichier(),
+        ] : null,
+
+        'tags' => array_map(
+            function (Tag $tag) {
+                return [
+                    'id'        => $tag->getId(),
+                    'code'      => $tag->getCode(),
+                    'contenu'   => $tag->getContenu(),
+                    'categorie' => $tag->getCategorie(),
+                ];
+            },
+            $recette->getTags()->toArray()
+        ),
+    ];
+}
 
     #[Route('/recommandation', name: 'recommandation', methods: ['GET'])]
 #[IsGranted('ROLE_USER')]
