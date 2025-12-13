@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -14,23 +15,59 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class UserAdminController extends AbstractController
 {
-    #[Route('/user', name: 'api_admin_user_index', methods: ['GET'])]
-    public function index(UserRepository $userRepository): JsonResponse
+      #[Route('/user', name: 'api_admin_user_index', methods: ['GET'])]
+    public function index(Request $request, UserRepository $userRepository): JsonResponse
     {
-        $users = $userRepository->findAll();
+        // 1) Récup paramètres de requête
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = max(1, min(100, (int) $request->query->get('limit', 20)));
+        $search = trim((string) $request->query->get('search', ''));
+        $status = $request->query->get('status'); // 'active', 'inactive' ou null
 
-        $data = array_map(
-            fn (User $user) => [
-                'id'      => $user->getId(),
-                'email'   => $user->getEmail(),
-                'pseudo'  => $user->getPseudo(),
-                'roles'   => $user->getRoles(),
-                'enabled' => $user->isEnabled(),
-            ],
-            $users
-        );
+        // 2) Base du QueryBuilder
+        $qb = $userRepository->createQueryBuilder('u');
 
-        return $this->json($data);
+        // 3) Filtre recherche (email / pseudo)
+        if ($search !== '') {
+            $qb
+                ->andWhere('u.email LIKE :search OR u.pseudo LIKE :search')
+                ->setParameter('search', '%'.$search.'%');
+        }
+
+        // 4) Filtre statut
+        if ($status === 'active') {
+            $qb
+                ->andWhere('u.enabled = :enabled')
+                ->setParameter('enabled', true);
+        } elseif ($status === 'inactive') {
+            $qb
+                ->andWhere('u.enabled = :enabled')
+                ->setParameter('enabled', false);
+        }
+
+        // 5) Total avant pagination
+        $qbCount = clone $qb;
+        $total = (int) $qbCount
+            ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        // 6) Pagination + sélection des champs
+        $qb
+            ->select('u.id, u.email, u.pseudo, u.roles, u.enabled')
+            ->orderBy('u.id', 'ASC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        $items = $qb->getQuery()->getArrayResult();
+
+        // 7) Format de réponse standardisé
+        return $this->json([
+            'items' => $items,
+            'page'  => $page,
+            'limit' => $limit,
+            'total' => $total,
+        ]);
     }
 
     #[Route('/user/{id}/toggle-enabled', name: 'api_admin_users_toggle_enabled', methods: ['PATCH'])]
