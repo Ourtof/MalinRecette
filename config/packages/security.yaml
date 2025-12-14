@@ -38,6 +38,7 @@ security:
         - { path: ^/api/recettes, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/tags, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/illustrations, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/contact, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/recettes, roles: IS_AUTHENTICATED_FULLY, methods: [POST] }
         - { path: ^/api/illustrations, roles: IS_AUTHENTICATED_FULLY, methods: [POST] }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
