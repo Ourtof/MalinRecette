@@ -1,0 +1,19 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+
+    # Evite d'analyser des dossiers inutiles
+    excludePaths:
+        - var
+        - vendor
+        - public
+        - migrations
+
+    # Symfony: PHPStan lit le container compilé
+    symfony:
+        containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
+
+    # Qualité de vie
+    tmpDir: var/cache/phpstan
