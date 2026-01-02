@@ -55,8 +55,8 @@ class RecetteController extends AbstractController
         IllustrationRepository $illustrationRepo,
     ): JsonResponse {
         $user = $this->getUser();
-        if (!$user) {
-            // #[IsGranted] devrait suffire mais on garde un filet
+        if (!$user instanceof User) {
+            // IsGranted devrait suffire mais on garde un filet
             return $this->json(['message' => 'Non authentifié'], 401);
         }
 
