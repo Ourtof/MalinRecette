@@ -21,7 +21,7 @@ class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof User) {
             return $this->json(['message' => 'Non authentifié'], 401);
         }
 
@@ -38,7 +38,7 @@ class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user instanceof User) {
             return $this->json(['message' => 'Non authentifié'], 401);
         }
 
@@ -83,6 +83,10 @@ class UserController extends AbstractController
 
         return $this->json($this->serializeUser($user));
     }
+    
+    /**
+    * @return array<string, mixed>
+    */
 
     private function serializeUser(User $user): array
     {
