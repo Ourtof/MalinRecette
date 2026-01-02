@@ -28,7 +28,7 @@ class IllustrationController extends AbstractController
         // Récupérer les bytes envoyés par Flutter
         $content = $request->getContent();
 
-        if ($content === '' || $content === false) {
+        if ($content === '') {
             return $this->json(['message' => 'Aucun fichier envoyé'], 400);
         }
 
