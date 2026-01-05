@@ -25,10 +25,16 @@ class RecetteController extends AbstractController
     {
         $q = $request->query->get('q');
         $tag = $request->query->get('tag');
-        $page = (int) $request->query->get('page', 1);
-        $limit = (int) $request->query->get('limit', 10);
+        $page  = max(1, $request->query->getInt('page', 1));
+        $limit = $request->query->getInt('limit', 6);
+        // limite les abus
+        $limit = min(max(1, $limit), 100);
+
+        dump(['page' => $page, 'limit' => $limit]);
 
         $result = $recetteRepo->search($q, $tag, $page, $limit);
+
+        dump(['count' => count($result['items']), 'result' => $result]);
 
         $items = array_map([$this, 'normalizeRecette'], $result['items']);
 
@@ -271,7 +277,7 @@ class RecetteController extends AbstractController
             $pseudo = $auteur->getPseudo();
 
             // Si le compte est désactivé, on anonymise l’affichage
-            if (method_exists($auteur, 'isEnabled') && !$auteur->isEnabled()) {
+            if (!$auteur->isEnabled()) {
                 $pseudo = 'Ancien utilisateur';
             }
 
@@ -330,7 +336,7 @@ class RecetteController extends AbstractController
         }
 
         // Appel du service : on peut demander plusieurs résultats,
-        // mais pour l’API on ne garde que le "meilleur" (le premier).
+        // mais pour l’API on ne garde que le meilleur résultat.
         $recettes = $serviceRecommandation->recommanderPourUtilisateur($utilisateur, 20);
 
         // Aucune recette adaptée -> 204, comme attendu côté Flutter
@@ -341,12 +347,10 @@ class RecetteController extends AbstractController
         /** @var Recette $recette */
         $recette = $recettes[0];
 
-        $tags = [];
-        foreach ($recette->getTags() as $tag) {
-            if ($tag instanceof Tag) {
-                $tags[] = $tag->getContenu();
-            }
-        }
+        $tags = array_map(
+            static fn (Tag $tag) => $tag->getContenu(),
+            $recette->getTags()->toArray()
+        );
 
         $donnees = [
             'id'    => $recette->getId(),

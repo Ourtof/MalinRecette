@@ -19,8 +19,9 @@ final class UserAdminController extends AbstractController
     public function index(Request $request, UserRepository $userRepository): JsonResponse
     {
         // 1) Récup paramètres de requête
-        $page = max(1, (int) $request->query->get('page', 1));
-        $limit = max(1, min(100, (int) $request->query->get('limit', 20)));
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = $request->query->getInt('limit', 20);
+        $limit = max(1, min(100, $limit));
         $search = trim((string) $request->query->get('search', ''));
         $status = $request->query->get('status'); // 'active', 'inactive' ou null
 
@@ -86,7 +87,7 @@ final class UserAdminController extends AbstractController
         /** @var User $currentUser */
         $currentUser = $this->getUser();
 
-        if ($currentUser && $currentUser->getId() === $targetUser->getId()) {
+        if ($currentUser->getId() === $targetUser->getId()) {
             return $this->json(
                 ['message' => 'Tu ne peux pas désactiver ton propre compte.'],
                 400
