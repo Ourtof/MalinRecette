@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api')]
@@ -21,9 +22,22 @@ class LoginController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         JWTTokenManagerInterface $JWTManager
     ): JsonResponse {
-        // Préflight CORS éventuel
         if ($request->getMethod() === 'OPTIONS') {
             return new JsonResponse(null, 204);
+        }
+
+        // rate limiting
+        try {
+            /** @var RateLimiterFactory $loginLimiter */
+            $loginLimiter = $this->container->get('limiter.login');
+            $limiter = $loginLimiter->create($request->getClientIp());
+            if (!$limiter->consume()->isAccepted()) {
+                return $this->json([
+                    'message' => 'Trop de tentatives. Réessaie dans quelques minutes.'
+                ], 429);
+            }
+        } catch (\Exception $e) {
+            // si le rate limiter pas dispo, on continue sans limitation
         }
 
         $data = json_decode($request->getContent(), true) ?? [];
@@ -40,17 +54,14 @@ class LoginController extends AbstractController
             ->getRepository(User::class)
             ->findOneBy(['email' => $email]);
 
-        // 1) Pas d'utilisateur → identifiants invalides
         if (!$user) {
             return $this->json(['message' => 'Identifiants invalides.'], 401);
         }
 
-        // 2) Mauvais mot de passe
         if (!$passwordHasher->isPasswordValid($user, $password)) {
             return $this->json(['message' => 'Identifiants invalides.'], 401);
         }
 
-        // 3) Compte désactivé
         if (!$user->isEnabled()) {
             return $this->json(
                 ['message' => 'Compte désactivé. Contacte un administrateur.'],
@@ -58,7 +69,7 @@ class LoginController extends AbstractController
             );
         }
 
-        // 4) OK → génération du token
+        // génération du token
         $token = $JWTManager->create($user);
 
         return $this->json([

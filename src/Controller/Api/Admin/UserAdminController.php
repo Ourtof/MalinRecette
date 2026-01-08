@@ -18,24 +18,24 @@ final class UserAdminController extends AbstractController
     #[Route('/user', name: 'api_admin_user_index', methods: ['GET'])]
     public function index(Request $request, UserRepository $userRepository): JsonResponse
     {
-        // 1) Récup paramètres de requête
+        // récup paramètre de requête
         $page = max(1, $request->query->getInt('page', 1));
         $limit = $request->query->getInt('limit', 20);
         $limit = max(1, min(100, $limit));
         $search = trim((string) $request->query->get('search', ''));
         $status = $request->query->get('status'); // 'active', 'inactive' ou null
 
-        // 2) Base du QueryBuilder
+        // base du QueryBuilder
         $qb = $userRepository->createQueryBuilder('u');
 
-        // 3) Filtre recherche (email / pseudo)
+        // filtre recherche
         if ($search !== '') {
             $qb
                 ->andWhere('u.email LIKE :search OR u.pseudo LIKE :search')
                 ->setParameter('search', '%'.$search.'%');
         }
 
-        // 4) Filtre statut
+        // filtre statut
         if ($status === 'active') {
             $qb
                 ->andWhere('u.enabled = :enabled')
@@ -46,14 +46,14 @@ final class UserAdminController extends AbstractController
                 ->setParameter('enabled', false);
         }
 
-        // 5) Total avant pagination
+        // total avant pagination
         $qbCount = clone $qb;
         $total = (int) $qbCount
             ->select('COUNT(u.id)')
             ->getQuery()
             ->getSingleScalarResult();
 
-        // 6) Pagination + sélection des champs
+        // pagination + sélection des champs
         $qb
             ->select('u.id, u.email, u.pseudo, u.roles, u.enabled')
             ->orderBy('u.id', 'ASC')
@@ -62,7 +62,7 @@ final class UserAdminController extends AbstractController
 
         $items = $qb->getQuery()->getArrayResult();
 
-        // 7) Format de réponse standardisé
+        // format de réponse standardisé
         return $this->json([
             'items' => $items,
             'page'  => $page,

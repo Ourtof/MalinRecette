@@ -14,6 +14,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api')]
 class UserController extends AbstractController
 {
+    private const MAX_LENGTHS = [
+        'pseudo' => 50,
+        'prenom' => 50,
+        'nom' => 50,
+        'adresse' => 255,
+        'ville' => 50,
+    ];
+
     #[Route('/user', name: 'api_user_me', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function me(): JsonResponse
@@ -48,22 +56,54 @@ class UserController extends AbstractController
         }
 
         if (array_key_exists('prenom', $data)) {
-            $user->setPrenom($data['prenom']);
+            $prenom = trim($data['prenom']);
+            if (strlen($prenom) > self::MAX_LENGTHS['prenom']) {
+                return $this->json(['error' => "Le prénom ne peut pas dépasser " . self::MAX_LENGTHS['prenom'] . " caractères"], 400);
+            }
+            $user->setPrenom($prenom);
         }
         if (array_key_exists('nom', $data)) {
-            $user->setNom($data['nom']);
+            $nom = trim($data['nom']);
+            if (strlen($nom) > self::MAX_LENGTHS['nom']) {
+                return $this->json(['error' => "Le nom ne peut pas dépasser " . self::MAX_LENGTHS['nom'] . " caractères"], 400);
+            }
+            $user->setNom($nom);
         }
         if (array_key_exists('pseudo', $data)) {
-            $user->setPseudo($data['pseudo']);
+            $pseudo = trim($data['pseudo']);
+            if (strlen($pseudo) > self::MAX_LENGTHS['pseudo']) {
+                return $this->json(['error' => "Le pseudo ne peut pas dépasser " . self::MAX_LENGTHS['pseudo'] . " caractères"], 400);
+            }
+            $user->setPseudo($pseudo);
         }
         if (array_key_exists('email', $data)) {
-            $user->setEmail($data['email']);
+            $email = strtolower(trim($data['email']));
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->json(['error' => 'Email invalide'], 400);
+            }
+            if (strlen($email) > 180) {
+                return $this->json(['error' => 'Email trop long'], 400);
+            }
+            // vérifie que l'email est pas déjà utilisé par un autre utilisateur
+            $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+            if ($existingUser && $existingUser->getId() !== $user->getId()) {
+                return $this->json(['error' => 'Cet email est déjà utilisé'], 409);
+            }
+            $user->setEmail($email);
         }
         if (array_key_exists('adresse', $data)) {
-            $user->setAdresse($data['adresse']);
+            $adresse = trim($data['adresse']);
+            if (strlen($adresse) > self::MAX_LENGTHS['adresse']) {
+                return $this->json(['error' => "L'adresse ne peut pas dépasser " . self::MAX_LENGTHS['adresse'] . " caractères"], 400);
+            }
+            $user->setAdresse($adresse);
         }
         if (array_key_exists('ville', $data)) {
-            $user->setVille($data['ville']);
+            $ville = trim($data['ville']);
+            if (strlen($ville) > self::MAX_LENGTHS['ville']) {
+                return $this->json(['error' => "La ville ne peut pas dépasser " . self::MAX_LENGTHS['ville'] . " caractères"], 400);
+            }
+            $user->setVille($ville);
         }
         if (array_key_exists('codePostal', $data)) {
             if (!preg_match('/^\d{5}$/', $data['codePostal'])) {
@@ -72,6 +112,13 @@ class UserController extends AbstractController
             $user->setCodePostal($data['codePostal']);
         }
         if (array_key_exists('password', $data) && !empty($data['password'])) {
+            $passwordErrors = $this->validatePassword($data['password']);
+            if (!empty($passwordErrors)) {
+                return $this->json([
+                    'error' => 'Mot de passe invalide',
+                    'details' => $passwordErrors
+                ], 400);
+            }
             $hashedPassword = $passwordHasher->hashPassword(
                 $user,
                 $data['password']
@@ -100,5 +147,36 @@ class UserController extends AbstractController
             'ville'      => $user->getVille(),
             'codePostal' => (string) $user->getCodePostal(),
         ];
+    }
+
+    /**
+     * @return array<string> Liste des erreurs (vide si valide)
+     */
+    private function validatePassword(string $password): array
+    {
+        $errors = [];
+        
+        // complexité du mdp
+        if (strlen($password) < 8) {
+            $errors[] = 'Le mot de passe doit contenir au moins 8 caractères';
+        }
+        
+        if (!preg_match('/[A-Z]/', $password)) {
+            $errors[] = 'Le mot de passe doit contenir au moins une majuscule';
+        }
+        
+        if (!preg_match('/[a-z]/', $password)) {
+            $errors[] = 'Le mot de passe doit contenir au moins une minuscule';
+        }
+        
+        if (!preg_match('/[0-9]/', $password)) {
+            $errors[] = 'Le mot de passe doit contenir au moins un chiffre';
+        }
+        
+        if (!preg_match('/[^A-Za-z0-9]/', $password)) {
+            $errors[] = 'Le mot de passe doit contenir au moins un caractère spécial';
+        }
+        
+        return $errors;
     }
 }

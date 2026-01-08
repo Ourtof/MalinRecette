@@ -58,7 +58,7 @@ class RecetteController extends AbstractController
     ): JsonResponse {
         $user = $this->getUser();
         if (!$user instanceof User) {
-            // IsGranted devrait suffire mais on garde un filet
+            // sécurité supplémentaire à isGranted
             return $this->json(['message' => 'Non authentifié'], 401);
         }
 
@@ -76,7 +76,6 @@ class RecetteController extends AbstractController
             ], 400);
         }
 
-        // Illustration OBLIGATOIRE
         if (empty($payload['illustrationId'])) {
             return $this->json([
                 'message' => 'illustrationId est obligatoire',
@@ -97,7 +96,7 @@ class RecetteController extends AbstractController
         $recette->setAuteur($user);
         $recette->setIllustration($illustration);
 
-        // Gestion des tags : tableau de codes ["HEALTHY", "HALAL", "GLUTEN", ...]
+        // gestion des tags : tableau de codes ["HEALTHY", "HALAL", "GLUTEN", ...]
         $tagCodes = $payload['tagCodes'] ?? [];
 
         if (!is_array($tagCodes)) {
@@ -127,14 +126,14 @@ class RecetteController extends AbstractController
             foreach ($tags as $tag) {
                 $recette->addTag($tag);
 
-                // Si c'est un allergène, on enregistre son code
+                // si c'est un allergène, on enregistre son code
                 if ($tag->getCategorie() === 'ALLERGENE') {
                     $allergies[] = $tag->getCode(); // ex. "GLUTEN"
                 }
             }
         }
 
-        // Sauvegarde du JSON ["GLUTEN", "LACTOSE", ...]
+        // sauvegarde du JSON ["GLUTEN", "LACTOSE", ...]
         $recette->setAllergies($allergies);
 
         $em->persist($recette);
@@ -319,11 +318,11 @@ class RecetteController extends AbstractController
         $utilisateur = $this->getUser();
 
         if (!$utilisateur instanceof User) {
-            // Filet de sécurité en plus de #[IsGranted]
+            // filet de sécurité en plus de isGranted
             return $this->json(['message' => 'Non authentifié'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // On impose d'avoir un profil, sinon 400 (cohérent avec ton Flutter)
+        // profil obligatoire sinon 400
         if (!$utilisateur->getFoodProfile()) {
             return $this->json(
                 ['message' => 'Profil alimentaire non défini pour cet utilisateur'],
@@ -331,11 +330,10 @@ class RecetteController extends AbstractController
             );
         }
 
-        // Appel du service : on peut demander plusieurs résultats,
-        // mais pour l’API on ne garde que le meilleur résultat.
+        // pour l’API on ne garde que le meilleur résultat
         $recettes = $serviceRecommandation->recommanderPourUtilisateur($utilisateur, 20);
 
-        // Aucune recette adaptée -> 204, comme attendu côté Flutter
+        // aucune recette adaptée retourne 204
         if (empty($recettes)) {
             return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }

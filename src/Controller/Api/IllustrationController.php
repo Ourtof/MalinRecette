@@ -23,20 +23,19 @@ class IllustrationController extends AbstractController
         ParameterBagInterface $params,
     ): JsonResponse {
 
-        // Récupérer les bytes envoyés par Flutter
+        // récupérer les bytes envoyés par Flutter
         $content = $request->getContent();
 
         if ($content === '') {
             return $this->json(['message' => 'Aucun fichier envoyé'], 400);
         }
 
-        // Taille max (5 Mo)
         $size = strlen($content);
         if ($size > 5 * 1024 * 1024) {
             return $this->json(['message' => 'Fichier trop volumineux (max 5 Mo)'], 400);
         }
 
-        // Déterminer le MIME à partir du contenu
+        // détermine le MIME à partir du contenu
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mime  = $finfo->buffer($content) ?: 'application/octet-stream';
 
@@ -50,16 +49,15 @@ class IllustrationController extends AbstractController
             return $this->json(['message' => 'Type de fichier non autorisé'], 400);
         }
 
-        // Récupérer le nom de fichier envoyé par Flutter
+        // récupére le nom de fichier envoyé par Flutter
         $originalName = $request->headers->get('X-Filename', 'image');
         $baseName     = pathinfo($originalName, PATHINFO_FILENAME) ?: 'image';
         $extension    = pathinfo($originalName, PATHINFO_EXTENSION) ?: $allowedMimes[$mime];
 
-        // Nom safe
         $safeName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $baseName);
         $fileName = sprintf('%s_%s.%s', $safeName, uniqid(), $extension);
 
-        // Dossier de destination
+        // dossier de destination
         $uploadDir = $params->get('kernel.project_dir').'/public/uploads/recettes';
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
             return $this->json(['message' => 'Impossible de créer le dossier upload'], 500);
@@ -71,7 +69,6 @@ class IllustrationController extends AbstractController
             return $this->json(['message' => 'Erreur lors de l\'écriture du fichier'], 500);
         }
 
-        // Enregistrer l'entité Illustration
         $illustration = new Illustration();
         $illustration->setNomFichier($fileName);
 
@@ -87,7 +84,7 @@ class IllustrationController extends AbstractController
     #[Route('/{filename}', name: 'show', requirements: ['filename' => '[a-zA-Z0-9_\-\.]+'], methods: ['GET'])]
     public function show(string $filename): BinaryFileResponse
     {
-        // Bloquer explicitement les tentatives de path traversal
+        // bloquer explicitement les tentatives de path traversal
         if (str_contains($filename, '..') || str_contains($filename, '/') || str_contains($filename, '\\')) {
             throw $this->createNotFoundException();
         }
@@ -95,7 +92,7 @@ class IllustrationController extends AbstractController
         $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/recettes';
         $path = realpath($uploadDir . '/' . $filename);
 
-        // Double vérification : le chemin résolu doit être dans le bon dossier
+        // double vérif : le chemin résolu doit être dans le bon dossier
         if (!$path || !str_starts_with($path, realpath($uploadDir) . DIRECTORY_SEPARATOR)) {
             throw $this->createNotFoundException();
         }
