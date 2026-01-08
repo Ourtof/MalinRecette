@@ -136,17 +136,28 @@ class UserController extends AbstractController
      */
     private function serializeUser(User $user): array
     {
-        return [
+        $data = [
             'id'         => $user->getId(),
             'email'      => $user->getUserIdentifier(),
-            'roles'      => $user->getRoles(),
             'prenom'     => $user->getPrenom(),
             'nom'        => $user->getNom(),
             'pseudo'     => $user->getPseudo(),
-            'adresse'    => $user->getAdresse(),
-            'ville'      => $user->getVille(),
-            'codePostal' => (string) $user->getCodePostal(),
         ];
+        
+        // données sensibles uniquement pour les admins
+        if ($this->isGranted('ROLE_ADMIN')) {
+            $data['roles'] = $user->getRoles();
+            $data['adresse'] = $user->getAdresse();
+            $data['ville'] = $user->getVille();
+            $data['codePostal'] = (string) $user->getCodePostal();
+        } else {
+            // pour l'utilisateur lui-même, on affiche quand même ses données
+            $data['adresse'] = $user->getAdresse();
+            $data['ville'] = $user->getVille();
+            $data['codePostal'] = (string) $user->getCodePostal();
+        }
+        
+        return $data;
     }
 
     /**

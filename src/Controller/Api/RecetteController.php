@@ -105,6 +105,13 @@ class RecetteController extends AbstractController
             ], 400);
         }
 
+        // limite tag
+        if (count($tagCodes) > 10) {
+            return $this->json([
+                'message' => 'Maximum 20 tags autorisés par recette'
+            ], 400);
+        }
+
         $allergies = [];
 
         if (!empty($tagCodes)) {
@@ -133,7 +140,6 @@ class RecetteController extends AbstractController
             }
         }
 
-        // sauvegarde du JSON ["GLUTEN", "LACTOSE", ...]
         $recette->setAllergies($allergies);
 
         $em->persist($recette);
@@ -199,6 +205,13 @@ class RecetteController extends AbstractController
             if (!is_array($tagCodes)) {
                 return $this->json([
                     'message' => 'tagCodes doit être un tableau de codes',
+                ], 400);
+            }
+
+            // limite le nombre de tag
+            if (count($tagCodes) > 20) {
+                return $this->json([
+                    'message' => 'Maximum 20 tags autorisés par recette'
                 ], 400);
             }
 
