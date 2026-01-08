@@ -15,7 +15,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class UserAdminController extends AbstractController
 {
-      #[Route('/user', name: 'api_admin_user_index', methods: ['GET'])]
+    #[Route('/user', name: 'api_admin_user_index', methods: ['GET'])]
     public function index(Request $request, UserRepository $userRepository): JsonResponse
     {
         // 1) Récup paramètres de requête

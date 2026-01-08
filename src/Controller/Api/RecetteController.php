@@ -30,11 +30,7 @@ class RecetteController extends AbstractController
         // limite les abus
         $limit = min(max(1, $limit), 100);
 
-        dump(['page' => $page, 'limit' => $limit]);
-
         $result = $recetteRepo->search($q, $tag, $page, $limit);
-
-        dump(['count' => count($result['items']), 'result' => $result]);
 
         $items = array_map([$this, 'normalizeRecette'], $result['items']);
 

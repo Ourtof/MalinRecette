@@ -69,25 +69,24 @@ class UserController extends AbstractController
             if (!preg_match('/^\d{5}$/', $data['codePostal'])) {
                 return $this->json(['error' => 'Code postal invalide (5 chiffres requis)'], 400);
             }
-        $user->setCodePostal($data['codePostal']);
+            $user->setCodePostal($data['codePostal']);
         }
-          if (array_key_exists('password', $data) && !empty($data['password'])) {
-        $hashedPassword = $passwordHasher->hashPassword(
-            $user,
-            $data['password']
-        );
-        $user->setPassword($hashedPassword);
-    }
+        if (array_key_exists('password', $data) && !empty($data['password'])) {
+            $hashedPassword = $passwordHasher->hashPassword(
+                $user,
+                $data['password']
+            );
+            $user->setPassword($hashedPassword);
+        }
 
         $em->flush();
 
         return $this->json($this->serializeUser($user));
     }
-    
-    /**
-    * @return array<string, mixed>
-    */
 
+    /**
+     * @return array<string, mixed>
+     */
     private function serializeUser(User $user): array
     {
         return [
