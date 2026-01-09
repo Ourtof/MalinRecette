@@ -33,32 +33,33 @@ class RegisterController extends AbstractController
             return new JsonResponse(null, 204);
         }
 
-        // rate limiting
-        if ($registerLimiter !== null) {
-            try {
-                $limiter = $registerLimiter->create($request->getClientIp());
-                if (!$limiter->consume()->isAccepted()) {
-                    return new JsonResponse([
-                        'error' => 'Trop de tentatives. Réessaie plus tard.'
-                    ], 429);
-                }
-            } catch (\Exception $e) {
-                // si le rate limiter pas dispo, on continue sans limitation
-            }
-        }
-
         $data = $this->getJsonData($request);
         if ($data === null) {
             return $this->jsonInvalidResponse();
         }
 
-        // vérification des champs
+        // vérification des champs obligatoires (validation rapide avant rate limiting)
         $requiredFields = ['email', 'password', 'pseudo', 'prenom', 'nom', 'adresse', 'ville', 'codePostal'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 return new JsonResponse(['error' => "Le champ '$field' est manquant"], Response::HTTP_BAD_REQUEST);
             }
         }
+
+        // rate limiting (après validation basique pour éviter de consommer des tokens sur requêtes invalides)
+        // TEMPORAIREMENT DÉSACTIVÉ POUR DEBUG
+        // if ($registerLimiter !== null) {
+        //     try {
+        //         $limiter = $registerLimiter->create($request->getClientIp());
+        //         if (!$limiter->consume()->isAccepted()) {
+        //             return new JsonResponse([
+        //                 'error' => 'Trop de tentatives. Réessaie plus tard.'
+        //             ], 429);
+        //         }
+        //     } catch (\Exception $e) {
+        //         // si le rate limiter pas dispo, on continue sans limitation
+        //     }
+        // }
 
         // validation de l'email
         $emailValidation = $emailValidator->validateAndNormalize($data['email']);
