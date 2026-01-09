@@ -35,6 +35,7 @@ security:
         - { path: ^/api, methods: [OPTIONS], roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/recettes, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/tags, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/illustrations, roles: PUBLIC_ACCESS, methods: [GET] }

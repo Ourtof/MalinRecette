@@ -7,6 +7,7 @@ use App\Controller\Api\Traits\JsonRequestTrait;
 use App\Entity\User;
 use App\Service\EmailValidatorService;
 use App\Service\PasswordValidatorService;
+use App\Service\RefreshTokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,7 @@ class RegisterController extends AbstractController
         PasswordValidatorService $passwordValidator,
         EmailValidatorService $emailValidator,
         JWTTokenManagerInterface $JWTManager,
+        RefreshTokenService $refreshTokenService,
         ?RateLimiterFactory $registerLimiter = null
     ): Response {
         if ($request->getMethod() === 'OPTIONS') {
@@ -110,8 +112,12 @@ class RegisterController extends AbstractController
         // token pour connexion auto à l'inscription
         $token = $JWTManager->create($user);
 
+        // génération du refresh token
+        $refreshToken = $refreshTokenService->generateRefreshToken($user);
+
         return $this->json([
             'token' => $token,
+            'refreshToken' => $refreshToken->getToken(),
             'user' => [
                 'id'    => $user->getId(),
                 'email' => $user->getUserIdentifier(),

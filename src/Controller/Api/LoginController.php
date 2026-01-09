@@ -3,6 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Service\RefreshTokenService;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class LoginController extends AbstractController
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
         JWTTokenManagerInterface $JWTManager,
+        RefreshTokenService $refreshTokenService,
         ?RateLimiterFactory $loginLimiter = null
     ): JsonResponse {
         if ($request->getMethod() === 'OPTIONS') {
@@ -71,11 +73,15 @@ class LoginController extends AbstractController
             );
         }
 
-        // génération du token
+        // génération du token JWT
         $token = $JWTManager->create($user);
+
+        // génération du refresh token
+        $refreshToken = $refreshTokenService->generateRefreshToken($user);
 
         return $this->json([
             'token' => $token,
+            'refreshToken' => $refreshToken->getToken(),
             'user' => [
                 'id'    => $user->getId(),
                 'email' => $user->getUserIdentifier(),
