@@ -9,10 +9,10 @@ framework:
         
         register:
             policy: 'token_bucket'
-            limit: 3
+            limit: 10
             rate:
                 interval: '1 hour'
-                amount: 3
+                amount: 10
         
         api:
             policy: 'token_bucket'

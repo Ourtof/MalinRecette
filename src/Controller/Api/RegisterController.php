@@ -38,28 +38,13 @@ class RegisterController extends AbstractController
             return $this->jsonInvalidResponse();
         }
 
-        // vérification des champs obligatoires (validation rapide avant rate limiting)
+        // vérification des champs obligatoires
         $requiredFields = ['email', 'password', 'pseudo', 'prenom', 'nom', 'adresse', 'ville', 'codePostal'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 return new JsonResponse(['error' => "Le champ '$field' est manquant"], Response::HTTP_BAD_REQUEST);
             }
         }
-
-        // rate limiting (après validation basique pour éviter de consommer des tokens sur requêtes invalides)
-        // TEMPORAIREMENT DÉSACTIVÉ POUR DEBUG
-        // if ($registerLimiter !== null) {
-        //     try {
-        //         $limiter = $registerLimiter->create($request->getClientIp());
-        //         if (!$limiter->consume()->isAccepted()) {
-        //             return new JsonResponse([
-        //                 'error' => 'Trop de tentatives. Réessaie plus tard.'
-        //             ], 429);
-        //         }
-        //     } catch (\Exception $e) {
-        //         // si le rate limiter pas dispo, on continue sans limitation
-        //     }
-        // }
 
         // validation de l'email
         $emailValidation = $emailValidator->validateAndNormalize($data['email']);
@@ -90,6 +75,20 @@ class RegisterController extends AbstractController
         $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
         if ($existingUser) {
             return new JsonResponse(['error' => 'Un utilisateur avec cet email existe déjà'], Response::HTTP_CONFLICT);
+        }
+
+        // rate limiting (après TOUTES les validations pour ne consommer des tokens que sur requêtes vraiment valides)
+        if ($registerLimiter !== null) {
+            try {
+                $limiter = $registerLimiter->create($request->getClientIp());
+                if (!$limiter->consume()->isAccepted()) {
+                    return new JsonResponse([
+                        'error' => 'Trop de tentatives. Réessaie plus tard.'
+                    ], 429);
+                }
+            } catch (\Exception $e) {
+                // si le rate limiter pas dispo, on continue sans limitation
+            }
         }
 
         $user = new User();
