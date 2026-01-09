@@ -20,24 +20,11 @@ class LoginController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
-        JWTTokenManagerInterface $JWTManager
+        JWTTokenManagerInterface $JWTManager,
+        ?RateLimiterFactory $loginLimiter = null
     ): JsonResponse {
         if ($request->getMethod() === 'OPTIONS') {
             return new JsonResponse(null, 204);
-        }
-
-        // rate limiting
-        try {
-            /** @var RateLimiterFactory $loginLimiter */
-            $loginLimiter = $this->container->get('limiter.login');
-            $limiter = $loginLimiter->create($request->getClientIp());
-            if (!$limiter->consume()->isAccepted()) {
-                return $this->json([
-                    'message' => 'Trop de tentatives. Réessaie dans quelques minutes.'
-                ], 429);
-            }
-        } catch (\Exception $e) {
-            // si le rate limiter pas dispo, on continue sans limitation
         }
 
         $data = json_decode($request->getContent(), true) ?? [];
@@ -45,8 +32,23 @@ class LoginController extends AbstractController
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
 
+        // validation rapide avant rate limiting
         if (!$email || !$password) {
             return $this->json(['message' => 'Email et mot de passe requis.'], 400);
+        }
+
+        // rate limiting (après validation basique pour éviter de consommer des tokens sur requêtes invalides)
+        if ($loginLimiter !== null) {
+            try {
+                $limiter = $loginLimiter->create($request->getClientIp());
+                if (!$limiter->consume()->isAccepted()) {
+                    return $this->json([
+                        'message' => 'Trop de tentatives. Réessaie dans quelques minutes.'
+                    ], 429);
+                }
+            } catch (\Exception $e) {
+                // si le rate limiter échoue, on continue sans limitation
+            }
         }
 
         /** @var User|null $user */
