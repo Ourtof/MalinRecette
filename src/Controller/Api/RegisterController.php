@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Service\EmailValidatorService;
 use App\Service\PasswordValidatorService;
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +28,7 @@ class RegisterController extends AbstractController
         EntityManagerInterface $entityManager,
         PasswordValidatorService $passwordValidator,
         EmailValidatorService $emailValidator,
+        JWTTokenManagerInterface $JWTManager,
         ?RateLimiterFactory $registerLimiter = null
     ): Response {
         if ($request->getMethod() === 'OPTIONS') {
@@ -105,6 +107,16 @@ class RegisterController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Utilisateur enregistré avec succès'], Response::HTTP_CREATED);
+        // token pour connexion auto à l'inscription
+        $token = $JWTManager->create($user);
+
+        return $this->json([
+            'token' => $token,
+            'user' => [
+                'id'    => $user->getId(),
+                'email' => $user->getUserIdentifier(),
+                'roles' => $user->getRoles(),
+            ],
+        ], Response::HTTP_CREATED);
     }
 }
