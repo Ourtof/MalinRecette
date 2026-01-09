@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Controller\Api\Traits\JsonRequestTrait;
 use App\Entity\Recette;
 use App\Entity\Tag;
 use App\Entity\User;
@@ -20,6 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/recettes', name: 'api_recettes_')]
 class RecetteController extends AbstractController
 {
+    use JsonRequestTrait;
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(Request $request, RecetteRepository $recetteRepo): JsonResponse
     {
@@ -62,9 +64,9 @@ class RecetteController extends AbstractController
             return $this->json(['message' => 'Non authentifié'], 401);
         }
 
-        $payload = json_decode($request->getContent(), true);
-        if (!is_array($payload)) {
-            return $this->json(['message' => 'JSON invalide'], 400);
+        $payload = $this->getJsonData($request);
+        if ($payload === null) {
+            return $this->jsonInvalidResponse();
         }
 
         $titre = trim($payload['titre'] ?? '');
@@ -165,9 +167,9 @@ class RecetteController extends AbstractController
             return $this->json(['message' => 'Recette introuvable'], 404);
         }
 
-        $payload = json_decode($request->getContent(), true);
-        if (!is_array($payload)) {
-            return $this->json(['message' => 'JSON invalide'], 400);
+        $payload = $this->getJsonData($request);
+        if ($payload === null) {
+            return $this->jsonInvalidResponse();
         }
 
         if (array_key_exists('titre', $payload)) {

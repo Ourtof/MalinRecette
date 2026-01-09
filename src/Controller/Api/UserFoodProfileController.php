@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use App\Controller\Api\Traits\JsonRequestTrait;
 use App\Entity\UserFoodProfile;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -14,6 +15,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 class UserFoodProfileController extends AbstractController
 {
+    use JsonRequestTrait;
     private const ALLOWED_GOAL_TYPES = [
         UserFoodProfile::GOAL_CLASSIQUE,
         UserFoodProfile::GOAL_SPORTIF,
@@ -29,11 +31,6 @@ class UserFoodProfileController extends AbstractController
         'GLUTEN',
         'LAITAGE',
         'ARACHIDES',
-        'FRUITS_A_COQUE',
-        'OEUF',
-        'SOJA',
-        'POISSON',
-        'CRUSTACES',
     ];
 
     #[Route('', name: 'api_food_profile_get', methods: ['GET'])]
@@ -43,7 +40,7 @@ class UserFoodProfileController extends AbstractController
         $user = $this->getUser();
         $profile = $user->getFoodProfile();
 
-        // Pas de profil → valeurs par défaut, sans créer en base
+        // valeur par défaut si pas de profil
         if (!$profile) {
             return $this->json([
                 'goalType'       => UserFoodProfile::GOAL_CLASSIQUE,

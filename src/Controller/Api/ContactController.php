@@ -2,7 +2,9 @@
 
 namespace App\Controller\Api;
 
+use App\Controller\Api\Traits\JsonRequestTrait;
 use App\Entity\Contact;
+use App\Service\EmailValidatorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,31 +15,36 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/contact', name: 'api_contact_')]
 class ContactController extends AbstractController
 {
-    #[Route('', name: 'create', methods: ['POST'])]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
-    {
-        $payload = json_decode($request->getContent(), true);
+    use JsonRequestTrait;
 
-        if (!is_array($payload)) {
-            return $this->json(['message' => 'JSON invalide'], 400);
+    #[Route('', name: 'create', methods: ['POST'])]
+    public function create(
+        Request $request,
+        EntityManagerInterface $em,
+        EmailValidatorService $emailValidator
+    ): JsonResponse {
+        $payload = $this->getJsonData($request);
+        if ($payload === null) {
+            return $this->jsonInvalidResponse();
         }
 
-        $email   = trim((string)($payload['adresseMail'] ?? ''));
         $message = trim((string)($payload['contenuMessage'] ?? ''));
 
-        if ($email === '' || $message === '') {
+        if (empty($payload['adresseMail']) || $message === '') {
             return $this->json(
                 ['message' => 'adresseMail et contenuMessage sont obligatoires'],
                 400
             );
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $emailValidation = $emailValidator->validateAndNormalize($payload['adresseMail']);
+        if (!$emailValidation['valid']) {
             return $this->json(
                 ['message' => 'adresseMail n\'est pas une adresse valide'],
                 400
             );
         }
+        $email = $emailValidation['email'];
 
         $contact = new Contact();
         $contact
