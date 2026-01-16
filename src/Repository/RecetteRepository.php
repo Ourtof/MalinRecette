@@ -100,7 +100,5 @@ class RecetteRepository extends ServiceEntityRepository
             'page' => $page,
             'limit' => $limit,
         ];
-        
-        // Résultat : ton contrôleur peut facilement renvoyer un JSON avec la bonne pagination
     }
 }
