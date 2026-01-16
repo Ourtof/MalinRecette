@@ -81,7 +81,7 @@ class LoginController extends AbstractController
 
         return $this->json([
             'token' => $token,
-            'refreshToken' => $refreshToken->getToken(),
+            'refreshToken' => $refreshToken->getPlainToken() ?? $refreshToken->getToken(),
             'user' => [
                 'id'    => $user->getId(),
                 'email' => $user->getUserIdentifier(),

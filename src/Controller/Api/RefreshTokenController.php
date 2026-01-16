@@ -28,14 +28,15 @@ class RefreshTokenController extends AbstractController
         $data = $this->getJsonData($request);
         if ($data === null) {
             return $this->jsonInvalidResponse();
-        }
-
-        $refreshToken = $data['refreshToken'] ?? null;
-
-        if (!$refreshToken || !is_string($refreshToken)) {
-            return $this->json(['error' => 'refreshToken requis'], 400);
-        }
-
+            }
+            
+            $refreshToken = $data['refreshToken'] ?? null;
+            
+            if (!$refreshToken || !is_string($refreshToken)) {
+                return $this->json(['error' => 'refreshToken requis'], 400);
+                }
+                
+        // vérifie que le compte est toujours actif
         // valide le refresh token et récupère l'utilisateur
         $user = $refreshTokenService->validateRefreshToken($refreshToken);
 
@@ -55,7 +56,7 @@ class RefreshTokenController extends AbstractController
 
         return $this->json([
             'token' => $newToken,
-            'refreshToken' => $newRefreshToken->getToken(),
+            'refreshToken' => $newRefreshToken->getPlainToken() ?? $newRefreshToken->getToken(),
         ]);
     }
 }

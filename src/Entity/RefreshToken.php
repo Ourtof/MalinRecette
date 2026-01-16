@@ -29,6 +29,9 @@ class RefreshToken
     #[ORM\Column]
     private \DateTimeImmutable $createdAt;
 
+    // Propriété temporaire pour stocker le token en clair (non persistée)
+    private ?string $plainToken = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -80,5 +83,16 @@ class RefreshToken
     public function isExpired(): bool
     {
         return $this->expiresAt < new \DateTimeImmutable();
+    }
+
+    public function getPlainToken(): ?string
+    {
+        return $this->plainToken;
+    }
+
+    public function setPlainToken(?string $plainToken): static
+    {
+        $this->plainToken = $plainToken;
+        return $this;
     }
 }
