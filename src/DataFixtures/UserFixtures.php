@@ -22,7 +22,6 @@ class UserFixtures extends Fixture
 
     public function load(ObjectManager $manager): void
     {
-        // Création de 3 utilisateurs avec Faker
         for ($i = 0; $i < 3; $i++) {
             $user = new User();
             $user->setEmail($this->faker->unique()->email());
@@ -34,7 +33,6 @@ class UserFixtures extends Fixture
             $user->setCodePostal((int) $this->faker->postcode());
             $user->setRoles(['ROLE_USER']);
 
-            // Hash du mot de passe "password"
             $hashedPassword = $this->hasher->hashPassword($user, 'password');
             $user->setPassword($hashedPassword);
 
