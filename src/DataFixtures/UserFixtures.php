@@ -5,34 +5,42 @@ namespace App\DataFixtures;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Faker\Factory;
+use Faker\Generator;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserFixtures extends Fixture
 {
     private UserPasswordHasherInterface $hasher;
+    private Generator $faker;
 
     public function __construct(UserPasswordHasherInterface $hasher)
     {
         $this->hasher = $hasher;
+        $this->faker = Factory::create('fr_FR');
     }
 
     public function load(ObjectManager $manager): void
     {
-        $user = new User();
-        $user->setEmail('admin@test.fr');
-        $user->setPseudo('Testeur');
-        $user->setPrenom('Jean');
-        $user->setNom('Dupont');
-        $user->setAdresse('123 rue de la Paix');
-        $user->setVille('Paris');
-        $user->setCodePostal(75000);
-        $user->setRoles(['ROLE_USER']);
+        // Création de 3 utilisateurs avec Faker
+        for ($i = 0; $i < 3; $i++) {
+            $user = new User();
+            $user->setEmail($this->faker->unique()->email());
+            $user->setPseudo($this->faker->userName());
+            $user->setPrenom($this->faker->firstName());
+            $user->setNom($this->faker->lastName());
+            $user->setAdresse($this->faker->streetAddress());
+            $user->setVille($this->faker->city());
+            $user->setCodePostal((int) $this->faker->postcode());
+            $user->setRoles(['ROLE_USER']);
 
-        // Hash du mot de passe "password123"
-        $hashedPassword = $this->hasher->hashPassword($user, 'password');
-        $user->setPassword($hashedPassword);
+            // Hash du mot de passe "password"
+            $hashedPassword = $this->hasher->hashPassword($user, 'password');
+            $user->setPassword($hashedPassword);
 
-        $manager->persist($user);
+            $manager->persist($user);
+        }
+
         $manager->flush();
     }
 }
