@@ -23,7 +23,7 @@ final class UserAdminController extends AbstractController
         $limit = $request->query->getInt('limit', 20);
         $limit = max(1, min(100, $limit));
         $search = trim((string) $request->query->get('search', ''));
-        $status = $request->query->get('status'); // 'active', 'inactive' ou null
+        $status = $request->query->get('status'); // 'active', 'inactive'
 
         // base du QueryBuilder
         $qb = $userRepository->createQueryBuilder('u');
