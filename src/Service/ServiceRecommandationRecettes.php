@@ -63,7 +63,7 @@ class ServiceRecommandationRecettes
 
         if ($regime === UserFoodProfile::DIET_VEGETARIEN) {
 
-            // Tag "Végétarienne" → code VEGETARIENNE
+            // tag "Végétarienne" / code VEGETARIENNE
             return $this->recettePossedeTagCode($recette, 'VEGETARIENNE');
         }
 
@@ -88,13 +88,13 @@ class ServiceRecommandationRecettes
 
         if ($objectif === UserFoodProfile::GOAL_SPORTIF) {
 
-            // On mappe SPORTIF sur ton tag "Riche en protéines" → code PROTEINEE
+            // on map SPORTIF sur le tag "Riche en protéines" → code PROTEINEE
             return $this->recettePossedeTagCode($recette, 'PROTEINEE');
         }
 
         if ($objectif === UserFoodProfile::GOAL_MINCEUR) {
             
-            // MINCEUR → tag "Healthy" → code HEALTHY
+            // MINCEUR , tag "Healthy" , code HEALTHY
             return $this->recettePossedeTagCode($recette, 'HEALTHY');
         }
 
@@ -110,7 +110,7 @@ class ServiceRecommandationRecettes
         $allergiesRecette = $recette->getAllergies();
 
         if (empty($allergiesRecette)) {
-            // Pas d’info allergies sur la recette → on laisse passer
+            // pas d’info allergies sur la recette , on laisse passer
             return true;
         }
 
