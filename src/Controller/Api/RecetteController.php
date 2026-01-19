@@ -121,7 +121,8 @@ class RecetteController extends AbstractController
                 'code'     => $tagCodes,
                 'isActive' => true,
             ]);
-
+            
+            // vérifie que les codes renvoyés existe vraiment
             $codesTrouves = array_map(fn(Tag $tag) => $tag->getCode(), $tags);
             $codesManquants = array_diff($tagCodes, $codesTrouves);
 
