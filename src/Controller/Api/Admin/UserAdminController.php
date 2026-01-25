@@ -105,4 +105,55 @@ final class UserAdminController extends AbstractController
             'enabled' => $targetUser->isEnabled(),
         ]);
     }
+
+    #[Route('/user/{id}/profile', name: 'api_admin_user_profile', methods: ['GET'])]
+    public function getUserProfile(
+        int $id,
+        UserRepository $userRepository
+    ): JsonResponse {
+        /** @var User|null $targetUser */
+        $targetUser = $userRepository->find($id);
+
+        if (!$targetUser) {
+            return $this->json(['message' => 'Utilisateur introuvable.'], 404);
+        }
+
+        $profile = $this->serializeUser($targetUser);
+        $foodProfile = $targetUser->getFoodProfile();
+
+        $profile['foodProfile'] = $foodProfile ? [
+            'goalType'       => $foodProfile->getGoalType(),
+            'dietType'       => $foodProfile->getDietType(),
+            'isHalal'        => $foodProfile->isHalal(),
+            'allergies'      => $foodProfile->getAllergies(),
+            'autreAllergies' => $foodProfile->getAutreAllergies(),
+        ] : [
+            'goalType'       => 'CLASSIQUE',
+            'dietType'       => 'CLASSIQUE',
+            'isHalal'        => false,
+            'allergies'      => [],
+            'autreAllergies' => null,
+        ];
+
+        return $this->json($profile);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function serializeUser(User $user): array
+    {
+        return [
+            'id'         => $user->getId(),
+            'email'      => $user->getUserIdentifier(),
+            'prenom'     => $user->getPrenom(),
+            'nom'        => $user->getNom(),
+            'pseudo'     => $user->getPseudo(),
+            'roles'      => $user->getRoles(),
+            'adresse'    => $user->getAdresse(),
+            'ville'      => $user->getVille(),
+            'codePostal' => (string) $user->getCodePostal(),
+            'enabled'    => $user->isEnabled(),
+        ];
+    }
 }
