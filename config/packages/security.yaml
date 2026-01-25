@@ -13,21 +13,10 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        #login:
-            #pattern: ^/api/login
-            #stateless: true
-
         api:
             pattern: ^/api
             stateless: true
             provider: app_user_provider
-
-            #json_login:
-                #check_path: /api/login
-                #username_path: email
-                #password_path: password
-                #success_handler: lexik_jwt_authentication.handler.authentication_success
-                #failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
             jwt: ~
 
@@ -43,10 +32,6 @@ security:
         - { path: ^/api/recettes, roles: IS_AUTHENTICATED_FULLY, methods: [POST] }
         - { path: ^/api/illustrations, roles: IS_AUTHENTICATED_FULLY, methods: [POST] }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-
-    # access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:
     security:
