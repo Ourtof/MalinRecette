@@ -23,6 +23,4 @@ nelmio_cors:
             allow_credentials: false
             max_age: 3600
 
-# doc : permet d'accepter toutes les origines car dart ne permet pas le crossOrigin en local. 
-# ex : localhost:57850, symfo : localhost:8000
-# en gros front et back ne tournent pas sur la meme chose (57850 et 8000) donc il faut autoriser le cross origin.
+# permet d'accepter toutes les origines car dart ne permet pas le crossOrigin en local. 
