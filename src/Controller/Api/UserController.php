@@ -129,6 +129,26 @@ class UserController extends AbstractController
         return $this->json($this->serializeUser($user));
     }
 
+    #[Route('/user', name: 'api_user_delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER')]
+    public function deleteMe(EntityManagerInterface $em): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->json(['message' => 'Non authentifié'], 401);
+        }
+
+        // La suppression en cascade est configurée dans l'entité User
+        // pour UserFoodProfile (cascade: ['persist', 'remove'])
+        // et pour les recettes (cascade: ['remove'])
+        $em->remove($user);
+        $em->flush();
+
+        return $this->json(['message' => 'Profil supprimé avec succès'], 200);
+    }
+
     /**
      * @return array<string, mixed>
      */
