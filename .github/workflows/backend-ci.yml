@@ -1,0 +1,31 @@
+name: Tests Symfony
+
+on:
+  push:
+    branches:
+      - pipeline-CI
+
+  pull_request:
+    branches:
+      - pipeline-CI
+
+jobs:
+  tests:
+    name: Tests PHPUnit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v7
+
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Installer les dépendances Composer
+        run: composer install --no-interaction --prefer-dist --no-progress --no-scripts
+
+      - name: Exécuter les tests PHPUnit
+        run: php bin/phpunit
