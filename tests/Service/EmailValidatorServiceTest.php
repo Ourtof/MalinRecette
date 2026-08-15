@@ -20,7 +20,7 @@ class EmailValidatorServiceTest extends TestCase
         $result = $this->emailValidatorService->validateAndNormalize('utilisateur@example.com');
 
         $this->assertTrue($result['valid']);
-        $this->assertSame('utilisateur@example.com', $result['']);
+        $this->assertSame('utilisateur@example.com', $result['emails']);
         $this->assertNull($result['error']);
     }
 
