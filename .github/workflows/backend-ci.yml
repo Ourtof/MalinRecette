@@ -3,11 +3,11 @@ name: Tests Symfony
 on:
   push:
     branches:
-      - pipeline-CI
+      - dev
 
   pull_request:
     branches:
-      - pipeline-CI
+      - dev
 
 jobs:
   tests:
