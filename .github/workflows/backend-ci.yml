@@ -47,7 +47,7 @@ jobs:
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress --no-scripts
 
       - name: Créer l'artifact de déploiement
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: malinrecette-backend
           path: |
