@@ -39,6 +39,7 @@ class Recette
     #[ORM\ManyToMany(targetEntity: Tag::class, inversedBy: 'recettes')]
     private Collection $tags;
 
+    /** @var array<int, string> */
     #[ORM\Column(type: 'json')]
     private array $allergies = [];
 
@@ -150,11 +151,13 @@ class Recette
         return $this;
     }
 
+    /** @return array<int, string> */
     public function getAllergies(): array
     {
         return $this->allergies;
     }
 
+    /** @param array<int, string> $allergies */
     public function setAllergies(array $allergies): self
     {
         $this->allergies = $allergies;

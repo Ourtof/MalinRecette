@@ -277,6 +277,9 @@ class RecetteController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
+    /**
+    * @return array<string, mixed>
+    */
     private function normalizeRecette(Recette $recette): array
     {
         $auteur       = $recette->getAuteur();

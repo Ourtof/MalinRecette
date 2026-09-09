@@ -24,7 +24,6 @@ class UserController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function me(): JsonResponse
     {
-        /** @var User $user */
         $user = $this->getUser();
 
         if (!$user instanceof User) {
@@ -43,7 +42,6 @@ class UserController extends AbstractController
         PasswordValidatorService $passwordValidator,
         EmailValidatorService $emailValidator
     ): JsonResponse {
-        /** @var User $user */
         $user = $this->getUser();
 
         if (!$user instanceof User) {
@@ -133,7 +131,6 @@ class UserController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function deleteMe(EntityManagerInterface $em): JsonResponse
     {
-        /** @var User $user */
         $user = $this->getUser();
 
         if (!$user instanceof User) {

@@ -9,10 +9,11 @@ use App\Entity\UserFoodProfile;
 use App\Repository\RecetteRepository;
 use App\Service\ServiceRecommandationRecettes;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class ServiceRecommandationRecettesTest extends TestCase
 {
-    private RecetteRepository $recetteRepository;
+    private RecetteRepository&MockObject $recetteRepository;
     private ServiceRecommandationRecettes $serviceRecommandationRecettes;
 
     protected function setUp(): void
@@ -174,6 +175,7 @@ class ServiceRecommandationRecettesTest extends TestCase
         return $utilisateur;
     }
 
+    /** @param array<int, string> $allergies */
     private function creerProfil(
         string $objectif = UserFoodProfile::GOAL_CLASSIQUE,
         string $regime = UserFoodProfile::DIET_CLASSIQUE,

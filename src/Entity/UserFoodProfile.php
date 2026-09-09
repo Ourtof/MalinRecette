@@ -33,6 +33,7 @@ class UserFoodProfile
     #[ORM\Column(options: ['default' => false])]
     private bool $isHalal = false;
 
+    /** @var array<int, string> */
     #[ORM\Column(type: 'json')]
     private array $allergies = [];
 
@@ -92,11 +93,13 @@ class UserFoodProfile
         return $this;
     }
 
+    /** @return array<int, string> */
     public function getAllergies(): array
     {
         return $this->allergies;
     }
 
+    /** @param array<int, string> $allergies */
     public function setAllergies(array $allergies): self
     {
         $this->allergies = $allergies;

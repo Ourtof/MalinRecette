@@ -101,6 +101,7 @@ class ServiceRecommandationRecettes
         return false;
     }
 
+    /** @param array<int, string> $allergiesUtilisateur */
     private function compatibleAvecAllergies(Recette $recette, array $allergiesUtilisateur): bool
     {
         if (empty($allergiesUtilisateur)) {
