@@ -9,7 +9,7 @@ on:
 
 jobs:
   tests:
-    name: Tests PHPUnit
+    name: Tests PHPStan et PHPUnit
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,7 @@ jobs:
 
       - name: Générer le cache Symfony
         run: php bin/console cache:warmup --env=dev
-        
+
       - name: Exécuter PHPStan
         run: composer phpstan
       - name: Exécuter les tests PHPUnit
